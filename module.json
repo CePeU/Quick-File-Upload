@@ -29,5 +29,12 @@
       "name": "Deutsch",
       "path": "lang/de.json"
     }
-  ]
+  ],
+  "url": "https://github.com/CePeU/Quick-File-Upload",
+  "manifest": "https://github.com/CePeU/Quick-File-Upload/releases/latest/download/module.json",
+  "download": "https://github.com/CePeU/Quick-File-Upload/releases/download/1.8.0/quick-file-upload.zip",
+  "readme": "https://github.com/CePeU/Quick-File-Upload/blob/main/README.md",
+  "bugs": "https://github.com/CePeU/Quick-File-Upload/issues",
+  "changelog": "https://github.com/CePeU/Quick-File-Upload/blob/main/QuickJournalPageCalloutsDocs/CHANGELOG.md",
+  "media": []
 }
