@@ -80,11 +80,30 @@ Hooks.on("getSceneControlButtons", controlRecord => {
     controlRecord[moduleSettings.Parent].tools ??= {};
     InsertControl(controlRecord[moduleSettings.Parent].tools, QFU_MODULE_ID, uploadTool, moduleSettings.Order);
   } else {
-    InsertControl(controlRecord, QFU_MODULE_ID, {
+    let mainControl = {
       name: QFU_MODULE_ID, title: "QFU.Title", icon: uploadTool.icon, visible: true,
       // name: QFU_MODULE_ID, title: "Quick File Upload", icon: uploadTool.icon, visible: true,
-      activeTool: QFU_MODULE_ID, tools: { [QFU_MODULE_ID]: { ...uploadTool, order: 0 } },
-      onChange: (controlEvent, activeFlag) => { if (activeFlag === true) return OpenUpload(); }
-    }, moduleSettings.Order);
+      tools: {}
+    };
+    if (moduleSettings.Placement === "main-sub") {
+      // Leave the button tool inactive so every submenu click invokes it.
+      mainControl.tools[QFU_MODULE_ID] = { ...uploadTool, order: 0 };
+    } else {
+      mainControl.onChange = (controlEvent, activeFlag) => { if (activeFlag === true) return OpenUpload(); };
+    }
+    InsertControl(controlRecord, QFU_MODULE_ID, mainControl, moduleSettings.Order);
   }
+});
+
+// Main controls are selected only once by Foundry. Intercept this action button
+// before delegated selection so every click opens it without an empty tool menu.
+Hooks.on("renderSceneControls", controlApplication => {
+  if (ReadSettings().Placement === "main-sub") return;
+  let controlButton = controlApplication.element.querySelector(`[data-control="${QFU_MODULE_ID}"]`);
+  if (controlButton === null) return;
+  controlButton.onclick = controlEvent => {
+    controlEvent.preventDefault();
+    controlEvent.stopImmediatePropagation();
+    OpenUpload();
+  };
 });

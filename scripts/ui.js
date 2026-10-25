@@ -43,10 +43,11 @@ export function CreateField(fieldName, fieldLabel, fieldValue, inputType = "text
   return { Container: fieldContainer, Input: inputElement };
 }
 
-/* Add move-up, move-down and delete buttons for an HTMLElement in its list.
+/* Add move-up, move-down, optional clone and delete buttons for an HTMLElement.
+ * CloneHandler is a callback or null to omit cloning.
  * Returns the action bar. Removing/reordering nodes also reorders saved data.
  */
-export function CreateOrdering(entryElement) {
+export function CreateOrdering(entryElement, CloneHandler = null) {
   let actionBar = CreateElement("div", "qu-row-actions");
   let earlierLabel = game.i18n.localize("QFU.MoveEarlier");
   // let earlierLabel = game.i18n.localize("Move earlier");
@@ -54,6 +55,14 @@ export function CreateOrdering(entryElement) {
   // let laterLabel = game.i18n.localize("Move later");
   let deleteLabel = game.i18n.localize("QFU.DeleteEntry");
   // let deleteLabel = game.i18n.localize("Delete entry");
+  let cloneButton = null;
+  if (CloneHandler !== null) {
+    let cloneLabel = game.i18n.localize("QFU.CloneEntry");
+    // let cloneLabel = game.i18n.localize("Clone entry");
+    cloneButton = CreateButton("⧉", CloneHandler, "qu-clone");
+    cloneButton.title = cloneLabel;
+    cloneButton.setAttribute("aria-label", cloneLabel);
+  }
   let earlierButton = CreateButton("↑", () => {
     if (entryElement.previousElementSibling !== null) entryElement.previousElementSibling.before(entryElement);
   });
@@ -66,6 +75,7 @@ export function CreateOrdering(entryElement) {
     buttonElement.setAttribute("aria-label", buttonLabel);
     actionBar.append(buttonElement);
   }
+  if (CloneHandler !== null) actionBar.insertBefore(cloneButton, actionBar.lastElementChild);
   return actionBar;
 }
 

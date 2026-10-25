@@ -66,7 +66,7 @@
     "HelpRouting": "With All groups checked, every group and its rules are checked from top to bottom. The first qualifying rule wins. If no rule qualifies, the module fallback is used; group defaults are ignored. Uncheck All groups to run only the selected group. Its default rule receives unmatched files, or the module fallback is used if no group default exists. At most one rule per group may be marked default. Defaults ignore regex and size limits when used as fallbacks.",
     "HelpPatterns": "Each rule tests the filename regex first, then its maximum size. Use a plain pattern or /pattern/i for case-insensitive matching. A blank regex never matches, but its rule can be a group default. Maximum size is inclusive, in KB (1 KB = 1,024 bytes); 0 is unlimited. If a matching file is too large, evaluation continues to the next rule.",
     "HelpPaths": "Paths are relative to Foundry's user-data directory, such as uploads/images. Type a path or use Browse to select or create a folder. Missing upload folders are created when permissions allow. Folder creation in the picker is immediate and is not undone by Cancel. Upload, browse and folder creation permissions still apply. Only GMs can save settings.",
-    "HelpControls": "Main adds a top-level scene control. Submenu adds a tool under the parent control ID, such as tokens, tiles or notes. An unavailable parent falls back to a main control. Position 0 is first, -1 is last; larger positions append when they exceed the list.",
+    "HelpControls": "Main opens the upload window on every click without a submenu. Main control with submenu adds a top-level menu whose upload tool opens the window. Submenu adds the upload tool under the parent control ID, such as tokens, tiles or notes. An unavailable parent falls back to Main. Position 0 is first, -1 is last; larger positions append.",
     "HelpLayout": "Sizes accept pixels or percentages. Window percentages use the viewport; panel percentages use the application. The pad is above paths on the left; All groups is above the group list on the right. Pad width controls the left column, leaving at least 20% for groups. Pad height controls the top row, capped at 80%; header height supplies its minimum. Pixel sizes scale down on shrink. Reopen the window to apply initial dimensions. Focus the pad and press Ctrl+V to paste images, HTML or text; enable Clipboard to paste throughout the application. Text and Markdown remain literal text. Rule macros and built-in actions execute after upload, in the configured order. Observer recipients use ownership on the reference journal. Canceling a chooser skips the built-in action; a subsequent macro still runs.",
     "HelpTransfer": "Export downloads the complete valid settings draft, including this menu's unsaved edits. Import validates a JSON file and stages it in the editor. Saving applies only the fields belonging to the open menu; use the other menus to import their respective settings. Cancel discards edits. Invalid imports leave the draft unchanged. Files on the server are not part of the export.",
     "LayoutHint": "Enter pixels (720) or percentages (75%). Window percentages use the viewport; pad and header percentages use the application. Blank pad name uses the translated default.",
@@ -137,6 +137,8 @@
     "InvalidExport": "This export belongs to another module or an unsupported settings version.",
     "SelectGroup": "Select a group before uploading.",
     "UnconfirmedUpload": "The server did not confirm the upload.",
-    "DataSourceOnly": "Choose a folder in the user-data source."
+    "DataSourceOnly": "Choose a folder in the user-data source.",
+    "MainSubControl": "Main control with submenu",
+    "CloneEntry": "Clone entry"
   }
 }

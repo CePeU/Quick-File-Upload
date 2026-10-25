@@ -2,7 +2,7 @@
   "id": "quick-file-upload",
   "title": "Quick File Upload",
   "description": "Upload local files using ordered groups of filename and size rules.",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14.368"
@@ -32,7 +32,7 @@
   ],
   "url": "https://github.com/CePeU/Quick-File-Upload",
   "manifest": "https://github.com/CePeU/Quick-File-Upload/releases/latest/download/module.json",
-  "download": "https://github.com/CePeU/Quick-File-Upload/releases/download/1.8.0/quick-file-upload.zip",
+  "download": "https://github.com/CePeU/Quick-File-Upload/releases/download/1.9.0/quick-file-upload.zip",
   "readme": "https://github.com/CePeU/Quick-File-Upload/blob/main/README.md",
   "bugs": "https://github.com/CePeU/Quick-File-Upload/issues",
   "changelog": "https://github.com/CePeU/Quick-File-Upload/blob/main/QuickJournalPageCalloutsDocs/CHANGELOG.md",

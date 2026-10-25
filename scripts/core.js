@@ -62,7 +62,7 @@ export function CopySettings(sourceSettings) {
   return copiedSettings;
 }
 
-/* Validate and normalize edited/imported settings. Placement is "main" or
+/* Validate and normalize edited/imported settings. Placement is "main", "main-sub" or
  * "sub"; Order is -1 (last) or a zero-based index; Limit is KB, 0 unlimited.
  * Returns a fresh settings object, throwing before any settings are written.
  */
@@ -78,7 +78,7 @@ export function ValidateSettings(sourceSettings) {
     }
   }
   if (typeof cleanSettings.Color !== "string" || /^#[\da-f]{6}$/i.test(cleanSettings.Color) === false
-    || typeof cleanSettings.Label !== "string" || ["main", "sub"].includes(cleanSettings.Placement) === false
+    || typeof cleanSettings.Label !== "string" || ["main", "main-sub", "sub"].includes(cleanSettings.Placement) === false
     || typeof cleanSettings.Parent !== "string" || cleanSettings.Parent.trim().length === 0) {
     throw new Error(game.i18n.localize("QFU.InvalidAppearance"));
     // throw new Error(game.i18n.localize("Check the pad name, hex color, button placement, and parent control ID."));

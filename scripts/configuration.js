@@ -28,7 +28,7 @@ export class HelpApplication extends ContentApplication {
       [game.i18n.localize("QFU.PathsTitle"), game.i18n.localize("QFU.HelpPaths")],
       // [game.i18n.localize("Folders and permissions"), game.i18n.localize("Paths are relative to Foundry's user-data directory, such as uploads/images. Type a path or use Browse to select or create a folder. Missing upload folders are created when permissions allow. Folder creation in the picker is immediate and is not undone by Cancel. Upload, browse and folder creation permissions still apply. Only GMs can save settings.")],
       [game.i18n.localize("QFU.ControlsTitle"), game.i18n.localize("QFU.HelpControls")],
-      // [game.i18n.localize("Scene controls"), game.i18n.localize("Main adds a top-level scene control. Submenu adds a tool under the parent control ID, such as tokens, tiles or notes. An unavailable parent falls back to a main control. Position 0 is first, -1 is last; larger positions append when they exceed the list.")],
+      // [game.i18n.localize("Scene controls"), game.i18n.localize("Main opens the upload window on every click without a submenu. Main control with submenu adds a top-level menu whose upload tool opens the window. Submenu adds the upload tool under the parent control ID, such as tokens, tiles or notes. An unavailable parent falls back to Main. Position 0 is first, -1 is last; larger positions append.")],
       [game.i18n.localize("QFU.LayoutTitle"), game.i18n.localize("QFU.HelpLayout")],
       // [game.i18n.localize("Window and appearance"), game.i18n.localize("Sizes accept pixels (720) or percentages (75%). Window percentages use the viewport; pad and header percentages use the application size. Header width follows pad width. The group list retains at least 20% width. Header and toggle retain at least two font units in height. Pixel sizes scale down on shrink. Reopen the upload window to apply initial dimensions. A blank pad name uses the translated default label.")],
       [game.i18n.localize("QFU.TransferTitle"), game.i18n.localize("QFU.HelpTransfer")]
@@ -132,7 +132,7 @@ export class ConfigurationApplication extends ContentApplication {
     let pathLabel = game.i18n.localize("QFU.DestinationPath");
     // let pathLabel = game.i18n.localize("Destination path");
     ruleRow.append(nameField.Container, regexField.Container, limitField.Container,
-      this.CreatePathField("Path", pathLabel, ruleData.Path), defaultField.Container, CreateOrdering(ruleRow));
+      this.CreatePathField("Path", pathLabel, ruleData.Path), defaultField.Container, CreateOrdering(ruleRow, () => this.CloneRule(ruleRow)));
     let actionSettings = { ...QFU_ACTION_SETTINGS, ...ruleData.Action };
     let actionPanel = CreateElement("div", "qu-action-fields");
     // Only persist action settings after edits, preserving existing export shapes.
@@ -168,7 +168,7 @@ export class ConfigurationApplication extends ContentApplication {
     let identifierField = CreateField("Identifier", game.i18n.localize("QFU.IdentifierLabel"), groupData.Identifier);
     // let identifierField = CreateField("Identifier", game.i18n.localize("Group identifier (unique)"), groupData.Identifier);
     identifierField.Input.required = true;
-    groupHeader.append(identifierField.Container, CreateOrdering(groupBlock));
+    groupHeader.append(identifierField.Container, CreateOrdering(groupBlock, () => this.CloneGroup(groupBlock)));
     let excludedField = CreateField("Excluded", game.i18n.localize("QFU.ExcludedLabel"), groupData.Excluded, "checkbox");
     // let excludedField = CreateField("Excluded", game.i18n.localize("Skip when processing all groups"), groupData.Excluded, "checkbox");
     excludedField.Container.classList.add("qu-checkbox");
@@ -193,6 +193,40 @@ export class ConfigurationApplication extends ContentApplication {
     groupBlock.append(groupHeader, excludedField.Container, ruleList, CreateButton(addLabel, () => this.AddRule(ruleList).querySelector("input").focus()));
     groupList.append(groupBlock);
     return groupBlock;
+  }
+
+  /* Return a numbered name unique among the supplied strings, starting at 1. */
+  CloneName(sourceName, usedNames) {
+    let copyNumber = 1;
+    while (usedNames.includes(`${sourceName} ${copyNumber}`) === true) copyNumber++;
+    return `${sourceName} ${copyNumber}`;
+  }
+
+  /* Clone current group inputs, including rules, immediately below the source. */
+  CloneGroup(groupBlock) {
+    let groupList = groupBlock.parentElement;
+    let groupIndex = Array.from(groupList.children).indexOf(groupBlock);
+    let groupData = structuredClone(this.ReadDraft().Groups[groupIndex]);
+    groupData.Identifier = this.CloneName(groupData.Identifier,
+      Array.from(groupList.children, entryBlock => entryBlock.querySelector('[name="Identifier"]').value));
+    let clonedGroup = this.AddGroup(groupList, groupData);
+    groupBlock.after(clonedGroup);
+    clonedGroup.querySelector('[name="Identifier"]').focus();
+  }
+
+  /* Clone current rule inputs below the source; preserve the sole group default. */
+  CloneRule(ruleRow) {
+    let ruleList = ruleRow.parentElement;
+    let groupBlock = ruleList.closest(".qu-group");
+    let groupIndex = Array.from(groupBlock.parentElement.children).indexOf(groupBlock);
+    let ruleIndex = Array.from(ruleList.children).indexOf(ruleRow);
+    let ruleData = structuredClone(this.ReadDraft().Groups[groupIndex].Rules[ruleIndex]);
+    ruleData.Name = this.CloneName(ruleData.Name,
+      Array.from(ruleList.children, entryRow => entryRow.querySelector('[name="Name"]').value));
+    ruleData.Default = false;
+    let clonedRule = this.AddRule(ruleList, ruleData);
+    ruleRow.after(clonedRule);
+    clonedRule.querySelector('[name="Name"]').focus();
   }
 
   /* Read the current form HTMLElement in visible order; return an unvalidated
@@ -393,7 +427,10 @@ export class ConfigurationApplication extends ContentApplication {
     let subOption = CreateElement("option", "", game.i18n.localize("QFU.SubControl"));
     // let subOption = CreateElement("option", "", game.i18n.localize("Submenu tool"));
     subOption.value = "sub";
-    placementInput.append(...SortEntries([mainOption, subOption], optionElement => optionElement.textContent));
+    let combinedOption = CreateElement("option", "", game.i18n.localize("QFU.MainSubControl"));
+    // let combinedOption = CreateElement("option", "", game.i18n.localize("Main control with submenu"));
+    combinedOption.value = "main-sub";
+    placementInput.append(...SortEntries([mainOption, combinedOption, subOption], optionElement => optionElement.textContent));
     placementInput.value = this.Draft.Placement;
     placementField.append(placementInput);
     let parentField = CreateField("Parent", game.i18n.localize("QFU.ParentLabel"), this.Draft.Parent);
