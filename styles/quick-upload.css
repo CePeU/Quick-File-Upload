@@ -1,0 +1,83 @@
+.quick-upload .window-content { padding: 12px; overflow: hidden; min-height: 0; }
+.quick-upload .window-content * { box-sizing: border-box; }
+.quick-upload { min-width: 300px; min-height: 220px; }
+.qu-layout { display: grid; width: 100%; height: 100%; min-height: 0; overflow: hidden; }
+.qu-folder, .qu-toggle { min-height: 2em; padding: 8px; border-bottom: 1px solid var(--color-border-light-primary, #777); overflow: auto; }
+.qu-folder { display: flex; flex-direction: column; gap: 4px; }
+.qu-folder > * { flex-shrink: 0; }
+.qu-folder-rules { margin: 0; padding-left: 22px; font-size: .85em; overflow-wrap: anywhere; }
+.qu-folder span { font-size: .85em; overflow-wrap: anywhere; opacity: .8; }
+.qu-toggle { display: flex; align-items: center; border-left: 1px solid var(--color-border-light-primary, #777); }
+.qu-toggle label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; }
+.qu-pad { margin: 10px 10px 0 0; padding: 12px; background: var(--qu-color); color: #fff; border: 2px dashed #ffffff70; border-radius: 12px; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: auto; transition: filter .15s, border-color .15s; }
+.qu-pad.qu-dragover { border-color: #fff; filter: brightness(1.25); }
+.qu-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 12px; width: 100%; min-height: 100px; height: auto; background: transparent; border: none; color: white; box-shadow: none; white-space: normal; }
+.qu-drop i { font-size: 2.5em; }
+.qu-drop strong { font-size: 1.3em; overflow-wrap: anywhere; }
+.qu-drop span { font-size: .85em; }
+.qu-status { margin: 8px 0; font-size: .85em; }
+.qu-results { margin: 0; padding-left: 20px; max-height: 45%; overflow: auto; flex-shrink: 0; font-size: .85em; }
+.qu-results li { overflow-wrap: anywhere; margin: 4px 0; }
+.qu-error { color: #ffe0a8; }
+.qu-sidebar { display: flex; flex-direction: column; min-height: 0; min-width: 0; border-left: 1px solid var(--color-border-light-primary, #777); padding: 10px 0 0 10px; gap: 8px; }
+.qu-identifiers { display: flex; flex-direction: column; gap: 6px; overflow: auto; flex: 1; min-height: 0; }
+.qu-identifiers button { flex: none; height: auto; min-height: 34px; white-space: normal; overflow-wrap: anywhere; text-align: left; padding: 6px 10px; }
+.qu-identifiers button[aria-pressed="true"] { background: var(--qu-color); color: white; border-color: currentColor; }
+.qu-sidebar .qu-config { height: auto; white-space: normal; }
+.qu-settings-form { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.qu-settings-scroll { flex: 1; overflow: auto; min-height: 0; padding-right: 8px; }
+.qu-settings h3 { margin: 18px 0 8px; }
+.qu-settings p { font-size: .9em; line-height: 1.4; }
+.qu-settings label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.qu-settings input, .qu-settings select { width: 100%; }
+.qu-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.qu-rules { margin: 12px 0; display: flex; flex-direction: column; gap: 12px; }
+.qu-rule { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(75px, .7fr); gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #8886; }
+.qu-path-field { display: flex; align-items: end; gap: 6px; min-width: 0; }
+.qu-path-field label { flex: 1; }
+.qu-path-field button { flex: 0 1 auto; max-width: 150px; height: auto; min-height: 32px; white-space: normal; }
+.qu-rule .qu-path-field { grid-column: 1 / 3; }
+.qu-row-actions { display: flex; align-items: end; gap: 3px; }
+.qu-row-actions button { width: 28px; padding: 0; }
+.qu-validation { color: var(--color-level-error, #b22); margin: 0; }
+.qu-settings footer { display: flex; justify-content: end; gap: 10px; }
+.qu-settings footer button { flex: 1; }
+.qu-groups { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
+.qu-group { padding: 12px; border: 1px solid #8886; border-radius: 8px; background: #8881; }
+.qu-group-header { display: flex; align-items: end; gap: 12px; }
+.qu-group-header > label { flex: 1; }
+.qu-toolbar { display: flex; gap: 8px; flex-shrink: 0; }
+.qu-toolbar button { flex: 1; height: auto; white-space: normal; }
+.qu-settings label.qu-checkbox { flex-direction: row; align-items: center; }
+.qu-settings .qu-checkbox input { width: auto; }
+.qu-help-content { overflow-y: auto; min-height: 0; line-height: 1.6; }
+.qu-help-intro { margin: 0 0 16px; }
+.qu-help-topic { border: 1px solid #8886; border-radius: 8px; margin: 10px 0; padding: 12px 16px; }
+.qu-help-topic summary { cursor: pointer; font-weight: bold; }
+.qu-help-topic p { margin: 12px 0 0; }
+
+/* Four stable zones: pad/toggle above paths/groups. */
+.qu-pad { grid-area: 1 / 1; margin: 0 10px 10px 0; }
+.qu-toggle { grid-area: 1 / 2; }
+.qu-folder { grid-area: 2 / 1; min-height: 0; }
+.qu-sidebar { grid-area: 2 / 2; }
+.qu-action-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.qu-macro-name { overflow-wrap: anywhere; align-self: end; }
+.qu-rule { padding: 10px; border-radius: 6px; }
+/* Opaque neutral rows keep the group's chosen color out of the rules. Theme
+   variables inherit from the nearest Foundry theme, including per-app themes. */
+.theme-dark { --qu-rule-odd: #252525; --qu-rule-even: var(--qu-rule-dark, #383838); }
+.theme-light { --qu-rule-odd: #f5f5f5; --qu-rule-even: var(--qu-rule-light, #e0e0e0); }
+.qu-rule:nth-child(odd) { background: var(--qu-rule-odd, #f5f5f5); }
+.qu-rule:nth-child(even) { background: var(--qu-rule-even, #e0e0e0); }
+.qu-group { background: var(--qu-group-color, #8881); }
+.qu-group-header { flex-wrap: wrap; }
+.qu-group-header > label { flex-basis: 160px; }
+.qu-identifiers button, .qu-overview-group, .qu-folder-rules { background: var(--qu-group-color, transparent); }
+.qu-identifiers button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: -3px; background: var(--qu-group-color, var(--qu-color)); }
+.qu-toggle { flex-direction: column; align-items: stretch; gap: 8px; }
+.qu-toggle button { height: auto; white-space: normal; flex-shrink: 0; }
+.qu-toggle > label { margin-top: auto; }
+.qu-journal-list { grid-column: 1 / -1; overflow-wrap: anywhere; }
+.qu-journal-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 0; }
+.qu-journal-row span { overflow-wrap: anywhere; }

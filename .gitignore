@@ -1,0 +1,7 @@
+node_modules/
+architecture/
+tests/
+testing/
+*.cmd
+package-lock.json
+package.json
