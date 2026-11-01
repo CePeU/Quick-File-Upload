@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Clipboard image conversion smoke test</title>
+<body><p>Running</p>
+<script type="module">
+import { PrepareClipboardFile, DetectImageType, ConvertImageBlob } from "../scripts/clipboard.js";
+import { QFU_SETTINGS } from "../scripts/settings.js";
+import { UploadBatch } from "../scripts/core.js";
+window.game = { i18n: { localize: key => key, lang: "en" } };
+try {
+  let canvas = document.createElement("canvas");
+  canvas.width = 2; canvas.height = 2;
+  let context = canvas.getContext("2d");
+  context.fillStyle = "red"; context.fillRect(0, 0, 1, 1);
+  let png = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+  let source = new File([png], "wrong.jpg", { type: "image/jpeg" });
+  let settings = structuredClone(QFU_SETTINGS);
+  settings.Clipname = { Base: "test", Parts: [], Presets: [] };
+  for (let format of ["png", "webp", "jpg"]) {
+    let file = await PrepareClipboardFile(source, settings, format, "Images");
+    let expectedType = { png: "image/png", webp: "image/webp", jpg: "image/jpeg" }[format];
+    if (file.name !== `test.${format}` || file.type !== expectedType || await DetectImageType(file) !== expectedType) throw Error(`Wrong ${format} bytes or name`);
+    let bitmap = await createImageBitmap(file);
+    if (bitmap.width !== 2 || bitmap.height !== 2) throw Error("Wrong dimensions");
+    if (format === "jpg") {
+      context.drawImage(bitmap, 0, 0);
+      let pixel = context.getImageData(1, 1, 1, 1).data;
+      if (pixel[0] < 180 || pixel[1] < 180 || pixel[2] < 180 || pixel[3] !== 255) throw Error("JPEG transparency was not composited onto white");
+    }
+    bitmap.close();
+    let output = document.createElement("p"); output.textContent = `PASS: ${format} encoding, signature, name and decoding`; document.body.append(output);
+  }
+  // Exercise every source/target pair with actual browser codecs.
+  for (let inputType of ["image/png", "image/webp", "image/jpeg"]) {
+    let input = await ConvertImageBlob(png, inputType);
+    for (let outputType of ["image/png", "image/webp", "image/jpeg"]) {
+      let output = await ConvertImageBlob(input, outputType);
+      let bitmap = await createImageBitmap(output); bitmap.close();
+      if (output.type !== outputType) throw Error("Wrong output format");
+    }
+  }
+  let nativeBitmap = window.createImageBitmap;
+  window.createImageBitmap = undefined;
+  try {
+    let fallbackBlob = await ConvertImageBlob(png, "image/webp");
+    if (fallbackBlob.type !== "image/webp") throw Error("Image.decode fallback failed");
+  } finally { window.createImageBitmap = nativeBitmap; }
+  settings.Clipformat = "webp";
+  settings.Groups = [{ Identifier: "Images", Rules: [
+    { Name: "Clipboard images", Regex: "", Limit: 0, Path: "images/clipboard", Cliponly: true, Clipformat: "jpg" },
+    { Name: "Local as clipboard", Regex: ".", Limit: 0, Path: "images/local", Action: { Macro: "", Before: false, Function: "clipboard" } }
+  ] }];
+  let uploaded = [], results = [];
+  let picker = { browse: async () => ({}), upload: async (storage, folder, file) => {
+    uploaded.push({ folder, file }); return { path: `${folder}/${file.name}` };
+  } };
+  await UploadBatch([source], settings, false, "Images", picker, result => results.push(result), { Clipboard: true });
+  if (uploaded.length !== 1 || uploaded[0].folder !== "images/clipboard" || uploaded[0].file.type !== "image/jpeg") throw Error("Rule format override failed");
+  settings.Groups[0].Rules.shift();
+  await UploadBatch([source], settings, false, "Images", picker, result => results.push(result));
+  if (uploaded.length !== 2 || uploaded[1].folder !== settings.Clippath || uploaded[1].file.type !== "image/webp") throw Error("Clipboard action preprocessing failed");
+  if (results.some(result => result.Status === "Failed")) throw Error("Pipeline failed");
+  document.body.dataset.result = "passed";
+  document.title = "PASS";
+} catch (error) {
+  document.body.dataset.result = "failed";
+  document.body.append(String(error.stack));
+  document.title = "FAIL";
+}
+</script>

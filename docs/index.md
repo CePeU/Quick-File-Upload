@@ -23,3 +23,6 @@ Optional actions can post an image to chat, show it to selected players, create 
 - Optionally configure actions on individual rules to share uploaded images, create journal pages, or execute a macro. Use the module's help menu for details.
 
 Uploading requires Foundry's file-upload permission. Only GMs can save module settings.
+## Clipboard Import
+
+Version 1.11.0 adds clipboard-only rules, real PNG/WebP/JPG conversion, clipboard default folders and a modal filename builder. Open **Configure Settings > Quick File Upload > Clipboard Import**. See [[clipboard-import|Clipboard Import settings and naming library]] for routing priority, date/time tokens, drag-and-drop name building and examples.

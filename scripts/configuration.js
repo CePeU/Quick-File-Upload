@@ -1,8 +1,9 @@
-import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS, QFU_GROUP_SETTINGS, QFU_RULE_SETTINGS, QFU_ACTION_SETTINGS, QFU_MENU_FIELDS } from "./settings.js";
+import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS, QFU_GROUP_SETTINGS, QFU_RULE_SETTINGS, QFU_ACTION_SETTINGS, QFU_MENU_FIELDS, QFU_CLIP_RULE_SETTINGS } from "./settings.js";
 import { NormalizePath, ValidateSettings, ParseSettings, SerializeSettings } from "./core.js";
 import { ContentApplication, CreateElement, CreateButton, CreateField, CreateOrdering, AddSection } from "./ui.js";
 import { ReadSettings } from "./storage.js";
 import { SortEntries } from "./sorting.js";
+import { OpenNameEditor } from "./name-editor.js";
 
 export class HelpApplication extends ContentApplication {
   static DEFAULT_OPTIONS = {
@@ -133,6 +134,20 @@ export class ConfigurationApplication extends ContentApplication {
     // let pathLabel = game.i18n.localize("Destination path");
     ruleRow.append(nameField.Container, regexField.Container, limitField.Container,
       this.CreatePathField("Path", pathLabel, ruleData.Path), defaultField.Container, CreateOrdering(ruleRow, () => this.CloneRule(ruleRow)));
+    let clipboardPanel = CreateElement("div", "qu-clipboard-rule qu-fields");
+    clipboardPanel.dataset.changed = String(ruleData.Cliponly !== undefined || ruleData.Clipformat !== undefined);
+    let clipboardField = CreateField("Cliponly", game.i18n.localize("QFU.Cliponly"), ruleData.Cliponly ?? QFU_CLIP_RULE_SETTINGS.Cliponly, "checkbox");
+    // let clipboardField = CreateField("Cliponly", game.i18n.localize("Only match clipboard imports (blank regex matches any)"), ruleData.Cliponly ?? QFU_CLIP_RULE_SETTINGS.Cliponly, "checkbox");
+    let formatField = this.CreateChoice("Ruleformat", ruleData.Clipformat ?? QFU_CLIP_RULE_SETTINGS.Clipformat, ["default", "png", "webp", "jpg"]);
+    function UpdateClipboard() {
+      // Clipboard-only rules can inherit the clipboard fallback instead of a path.
+      ruleRow.querySelector('[name="Path"]').required = clipboardField.Input.checked === false;
+      formatField.querySelector("select").disabled = clipboardField.Input.checked === false;
+    }
+    clipboardPanel.append(clipboardField.Container, formatField);
+    clipboardPanel.addEventListener("change", () => { clipboardPanel.dataset.changed = "true"; UpdateClipboard(); });
+    ruleRow.append(clipboardPanel);
+    UpdateClipboard();
     let actionSettings = { ...QFU_ACTION_SETTINGS, ...ruleData.Action };
     let actionPanel = CreateElement("div", "qu-action-fields");
     // Only persist action settings after edits, preserving existing export shapes.
@@ -151,7 +166,7 @@ export class ConfigurationApplication extends ContentApplication {
     macroField.Input.addEventListener("change", UpdateMacro);
     if (actionSettings.Macro.length > 0) UpdateMacro();
     actionPanel.append(macroField.Container, macroName,
-      this.CreateChoice("Function", actionSettings.Function, ["none", "chat", "image", "journalimage", "journaltext", "choose"]));
+      this.CreateChoice("Function", actionSettings.Function, ["none", "chat", "image", "journalimage", "journaltext", "choose", "clipboard"]));
     let beforeField = CreateField("Before", game.i18n.localize("QFU.MacroBefore"), actionSettings.Before, "checkbox");
     // let beforeField = CreateField("Before", game.i18n.localize("Run macro before built-in action"), actionSettings.Before, "checkbox");
     actionPanel.append(beforeField.Container);
@@ -248,6 +263,7 @@ export class ConfigurationApplication extends ContentApplication {
       Excluded: groupBlock.querySelector('input[name="Excluded"]').checked,
       Rules: Array.from(groupBlock.querySelector(".qu-rules").children, ruleRow => ({
         ...this.ReadAction(ruleRow),
+        ...this.ReadClipboard(ruleRow),
         Name: ruleRow.querySelector('[name="Name"]').value,
         Regex: ruleRow.querySelector('[name="Regex"]').value,
         Path: ruleRow.querySelector('[name="Path"]').value,
@@ -263,6 +279,13 @@ export class ConfigurationApplication extends ContentApplication {
     if (groupBlock.dataset.colored !== "true") return {};
     return { Color: groupBlock.querySelector('[name="Groupcolor"]').value,
       Overview: groupBlock.querySelector('[name="Overview"]').checked };
+  }
+
+  /* Preserve old export shapes until clipboard rule controls are edited. */
+  ReadClipboard(ruleRow) {
+    if (ruleRow.querySelector(".qu-clipboard-rule").dataset.changed !== "true") return {};
+    return { Cliponly: ruleRow.querySelector('[name="Cliponly"]').checked,
+      Clipformat: ruleRow.querySelector('[name="Ruleformat"]').value };
   }
 
   /* Show resolved journal names beside the editable semicolon-separated UUID
@@ -508,6 +531,35 @@ export class ConfigurationApplication extends ContentApplication {
     scrollContent.append(actionFields);
     this.AddJournalList(actionFields);
     }
+    if (this.Menu === "Clipboard") {
+      let clipboardTitle = game.i18n.localize("QFU.ClipboardSettings");
+      // let clipboardTitle = game.i18n.localize("Clipboard Import");
+      let clipboardHint = game.i18n.localize("QFU.ClipboardSettingsHint");
+      // let clipboardHint = game.i18n.localize("Explicit clipboard rules run first. Blank clipboard-rule paths inherit this folder. Prefer clipboard defaults skips ordinary file rules. Names are generated after routing; patterns and limits test the source file. Images are really converted before upload. The Clipboard Import rule action uses these defaults before uploading a local file.");
+      AddSection(scrollContent, clipboardTitle, clipboardHint);
+      let clipboardFields = CreateElement("div", "qu-fields");
+      let clipboardPath = game.i18n.localize("QFU.Clippath");
+      // let clipboardPath = game.i18n.localize("Clipboard default / fallback folder");
+      clipboardFields.append(this.CreateChoice("Clipformat", this.Draft.Clipformat, ["png", "webp", "jpg"]),
+        this.CreatePathField("Clippath", clipboardPath, this.Draft.Clippath));
+      let overrideField = CreateField("Clipoverride", game.i18n.localize("QFU.Clipoverride"), this.Draft.Clipoverride, "checkbox");
+      // let overrideField = CreateField("Clipoverride", game.i18n.localize("Prefer clipboard defaults over ordinary file rules"), this.Draft.Clipoverride, "checkbox");
+      clipboardFields.append(overrideField.Container);
+      let nameLabel = game.i18n.localize("QFU.NameBuilder");
+      // let nameLabel = game.i18n.localize("Clipboard filename builder");
+      let nameSummary = CreateElement("p", "qu-name-summary", this.Draft.Clipname.Base);
+      clipboardFields.append(CreateButton(nameLabel, async () => {
+        try {
+          await OpenNameEditor({ Location: "Clipname", Read: settingName => this.Draft[settingName],
+            Write: (settingName, nameSettings) => {
+              if (formElement.isConnected === false) return;
+              this.Draft[settingName] = nameSettings;
+              nameSummary.textContent = nameSettings.Base;
+            } });
+        } catch (editorError) { this.ShowError(editorError); }
+      }), nameSummary);
+      scrollContent.append(clipboardFields);
+    }
     let errorElement = CreateElement("p", "qu-validation");
     errorElement.setAttribute("role", "status");
     let footerElement = CreateElement("footer");
@@ -568,6 +620,14 @@ export class ActionsApplication extends ConfigurationApplication {
   constructor(applicationOptions = {}) {
     super({ ...applicationOptions, id: "quick-file-upload-actions", window: { title: "QFU.ActionDefaults" } });
     // super({ ...applicationOptions, id: "quick-file-upload-actions", window: { title: "Upload actions and clipboard defaults" } });
+  }
+}
+
+export class ClipboardApplication extends ConfigurationApplication {
+  Menu = "Clipboard";
+  constructor(applicationOptions = {}) {
+    super({ ...applicationOptions, id: "quick-file-upload-clipboard", window: { title: "QFU.ClipboardSettings" } });
+    // super({ ...applicationOptions, id: "quick-file-upload-clipboard", window: { title: "Clipboard Import" } });
   }
 }
 

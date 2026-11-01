@@ -58,7 +58,7 @@ globalThis.ui = {
 };
 let { OpenUpload } = await import("../scripts/main.js");
 let { UploadApplication } = await import("../scripts/upload.js");
-let { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication, JournalListApplication } = await import("../scripts/configuration.js");
+let { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication, ClipboardApplication, JournalListApplication } = await import("../scripts/configuration.js");
 let { ReadSettings } = await import("../scripts/storage.js");
 
 beforeEach(() => {
@@ -126,6 +126,7 @@ test("manifest namespace, ApplicationV2 settings, help menu and API agree", () =
   assert.equal(registeredMenus.get("controls").type, ControlsApplication);
   assert.equal(registeredMenus.get("layout").type, LayoutApplication);
   assert.equal(registeredMenus.get("actions").type, ActionsApplication);
+  assert.equal(registeredMenus.get("clipboard").type, ClipboardApplication);
   assert.equal(registeredMenus.get("help").type, HelpApplication);
   assert.equal(moduleRecord.api.Upload, OpenUpload);
   assert.deepEqual(Object.keys(moduleRecord.api), ["Upload", "Settings"]);
@@ -650,4 +651,57 @@ test("pad controls retain focus, import clipboard representations and apply open
   let layoutWindow = await new LayoutApplication().render();
   layoutWindow.Form.elements.namedItem("Allgroups").checked = true;
   assert.equal(layoutWindow.ReadDraft().Allgroups, true);
+});
+
+test("clipboard menu and rule overrides save independently and round-trip through JSON", async () => {
+  let groupWindow = await new ConfigurationApplication().render();
+  let clipboardWindow = await new ClipboardApplication().render();
+  assert.equal(clipboardWindow.Form.querySelector(".qu-groups"), null);
+  clipboardWindow.Form.elements.namedItem("Clipformat").value = "jpg";
+  clipboardWindow.Form.elements.namedItem("Clippath").value = "clipboard/destination";
+  clipboardWindow.Form.elements.namedItem("Clipoverride").checked = true;
+  clipboardWindow.Draft.Clipname.Base = "new-name";
+  await clipboardWindow.SaveDraft();
+  let ruleRow = groupWindow.Form.querySelector(".qu-rule");
+  ruleRow.querySelector('[name="Cliponly"]').click();
+  ruleRow.querySelector('[name="Ruleformat"]').value = "webp";
+  ruleRow.querySelector('[name="Path"]').value = "";
+  assert.equal(ruleRow.querySelector('[name="Path"]').required, false);
+  assert.equal(ruleRow.querySelector('[name="Ruleformat"]').disabled, false);
+  ruleRow.querySelector('[name="Function"]').value = "clipboard";
+  ruleRow.querySelector('[name="Function"]').dispatchEvent(new Event("change", { bubbles: true }));
+  await groupWindow.SaveDraft();
+  assert.equal(currentSettings.Clipformat, "jpg");
+  assert.equal(currentSettings.Clippath, "clipboard/destination");
+  assert.equal(currentSettings.Clipoverride, true);
+  assert.equal(currentSettings.Clipname.Base, "new-name");
+  assert.equal(currentSettings.Groups[0].Rules[0].Cliponly, true);
+  assert.equal(currentSettings.Groups[0].Rules[0].Clipformat, "webp");
+  assert.equal(currentSettings.Groups[0].Rules[0].Action.Function, "clipboard");
+  let exportText = SerializeSettings(currentSettings);
+  let reopenedWindow = await new ClipboardApplication().render();
+  await reopenedWindow.ImportSettings(exportText);
+  assert.equal(reopenedWindow.ReadDraft().Clipname.Base, "new-name");
+  assert.equal(reopenedWindow.ReadDraft().Clipformat, "jpg");
+});
+
+test("paste and clipboard button mark imports while drag and local selection remain ordinary", async () => {
+  let uploadWindow = await new UploadApplication().render();
+  let imports = [];
+  uploadWindow.UploadFiles = (files, context) => imports.push({ files, context });
+  uploadWindow.PasteClipboard({ files: [], getData: type => type === "text/plain" ? "Hello" : "" });
+  assert.deepEqual(imports[0].context, { Clipboard: true });
+  Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: {
+    read: async () => [{ types: ["text/plain"], getType: async () => new browserWindow.Blob(["Hello"], { type: "text/plain" }) }]
+  } });
+  await uploadWindow.ImportClipboard();
+  assert.deepEqual(imports[1].context, { Clipboard: true });
+  let dropEvent = new Event("drop", { bubbles: true, cancelable: true });
+  Object.defineProperty(dropEvent, "dataTransfer", { value: { files: [new File(["Hello"], "local.txt")] } });
+  uploadWindow.element.querySelector(".qu-pad").dispatchEvent(dropEvent);
+  assert.equal(imports[2].context, undefined);
+  let fileInput = uploadWindow.element.querySelector('input[type="file"]');
+  Object.defineProperty(fileInput, "files", { value: [new File(["Hello"], "local.txt")] });
+  fileInput.dispatchEvent(new Event("change"));
+  assert.equal(imports[3].context, undefined);
 });

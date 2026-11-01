@@ -211,7 +211,7 @@ export class UploadApplication extends ContentApplication {
         let fileExtension = contentType.split("/")[1].replace("plain", "txt").replace("jpeg", "jpg").replace("svg+xml", "svg");
         uploadFiles.push(new File([contentBlob], `clipboard-${Date.now()}-${uploadFiles.length}.${fileExtension}`, { type: contentType }));
       }
-      await this.UploadFiles(uploadFiles);
+      await this.UploadFiles(uploadFiles, { Clipboard: true });
     } catch {
       ui.notifications.warn(game.i18n.localize("QFU.ClipboardUnavailable"));
       // ui.notifications.warn(game.i18n.localize("Clipboard access failed. Click the drop pad text and press Ctrl+V, or allow clipboard access in your browser."));
@@ -236,7 +236,7 @@ export class UploadApplication extends ContentApplication {
       if (fileContent.length === 0) return;
       uploadFiles.push(new File([fileContent], `clipboard-${Date.now()}.${fileExtension}`, { type: fileType }));
     }
-    this.UploadFiles(uploadFiles);
+    this.UploadFiles(uploadFiles, { Clipboard: true });
   }
 
   /* Display every active rule name/path in routing order and the actual fallback. */
@@ -314,7 +314,7 @@ export class UploadApplication extends ContentApplication {
   }
 
   /* Upload a File array with a validated snapshot; return Promise<void>. */
-  async UploadFiles(uploadFiles) {
+  async UploadFiles(uploadFiles, importContext = {}) {
     if (this.Busy === true) {
       ui.notifications.warn(game.i18n.localize("QFU.WaitBatch"));
       // ui.notifications.warn(game.i18n.localize("Wait for the current batch to finish."));
@@ -348,7 +348,7 @@ export class UploadApplication extends ContentApplication {
           if (this.History.at(-1)?.Status === "Uploading") this.History[this.History.length - 1] = resultEntry;
           else this.History.push(resultEntry);
           this.UpdateResults();
-        });
+        }, importContext);
     } finally {
       this.Busy = false;
       this.Snapshot = null;

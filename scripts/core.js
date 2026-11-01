@@ -1,5 +1,6 @@
-import { QFU_SETTINGS, QFU_MODULE_ID, QFU_SCHEMA_VERSION } from "./settings.js";
+import { QFU_SETTINGS, QFU_MODULE_ID, QFU_SCHEMA_VERSION, QFU_CLIP_RULE_SETTINGS } from "./settings.js";
 import { ExecuteActions, ValidateActions } from "./actions.js";
+import { ValidateClipboard, PrepareClipboardFile } from "./clipboard.js";
 
 /* Resolve a pixel/percentage string against referenceSize (number).
  * Returns a positive finite pixel count, or throws on invalid input.
@@ -69,6 +70,8 @@ export function CopySettings(sourceSettings) {
 export function ValidateSettings(sourceSettings) {
   let cleanSettings = CopySettings(sourceSettings);
   ValidateActions(cleanSettings);
+  ValidateClipboard(cleanSettings);
+  cleanSettings.Clippath = NormalizePath(cleanSettings.Clippath);
   cleanSettings.Fallback = NormalizePath(cleanSettings.Fallback);
   for (let settingName of ["Width", "Height", "Padwidth", "Padheight", "Headerheight"]) ResolveDimension(cleanSettings[settingName], 100);
   for (let settingName of ["Rulelight", "Ruledark"]) {
@@ -143,7 +146,20 @@ export function ValidateSettings(sourceSettings) {
           // throw new Error(game.i18n.localize("A rule's Default flag must be true or false."));
         }
         if (defaultFlag === true) defaultCount++;
-        let cleanRule = { Name: ruleEntry.Name.trim(), Regex: ruleEntry.Regex, Path: NormalizePath(ruleEntry.Path), Limit: sizeLimit, Default: defaultFlag };
+        let rulePath = ruleEntry.Path;
+        // Only clipboard rules may leave the path blank to inherit its fallback.
+        if (ruleEntry.Cliponly === true && typeof rulePath === "string" && rulePath.trim().length === 0) rulePath = "";
+        else rulePath = NormalizePath(rulePath);
+        let cleanRule = { Name: ruleEntry.Name.trim(), Regex: ruleEntry.Regex, Path: rulePath, Limit: sizeLimit, Default: defaultFlag };
+        if (ruleEntry.Cliponly !== undefined || ruleEntry.Clipformat !== undefined) {
+          let clipboardRule = { ...QFU_CLIP_RULE_SETTINGS, ...ruleEntry };
+          if (typeof clipboardRule.Cliponly !== "boolean" || ["default", "png", "webp", "jpg"].includes(clipboardRule.Clipformat) === false) {
+            throw new Error(game.i18n.localize("QFU.InvalidClipboard"));
+            // throw new Error(game.i18n.localize("Check the clipboard image format, naming tokens and default routing option."));
+          }
+          cleanRule.Cliponly = clipboardRule.Cliponly;
+          cleanRule.Clipformat = clipboardRule.Clipformat;
+        }
         if (ruleEntry.Action !== undefined) {
           ValidateActions(cleanSettings, ruleEntry.Action);
           cleanRule.Action = structuredClone(ruleEntry.Action);
@@ -219,7 +235,7 @@ export function GetActiveGroups(moduleSettings, allGroups, selectedIdentifier) {
  */
 export function ResolveFallback(activeGroups, moduleFallback, allGroups) {
   if (allGroups === false) {
-    let defaultRule = activeGroups[0]?.Rules.find(ruleEntry => ruleEntry.Default === true);
+    let defaultRule = activeGroups[0]?.Rules.find(ruleEntry => ruleEntry.Default === true && ruleEntry.Cliponly !== true);
     if (defaultRule !== undefined) return defaultRule.Path;
   }
   return moduleFallback;
@@ -234,22 +250,35 @@ export function ResolveDestination(uploadFile, moduleSettings, allGroups, select
 }
 
 /* Return the destination and the matching rule, including selected defaults. */
-export function ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier) {
+export function ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier, importContext = {}) {
   let activeGroups = GetActiveGroups(moduleSettings, allGroups, selectedIdentifier);
   if (allGroups === false && activeGroups.length === 0) {
     throw new Error(game.i18n.localize("QFU.SelectGroup"));
     // throw new Error(game.i18n.localize("Select a group before uploading."));
   }
-  for (let groupEntry of activeGroups) {
-    for (let ruleEntry of groupEntry.Rules) {
-      let compiledPattern = CompilePattern(ruleEntry.Regex);
-      if (compiledPattern === null || compiledPattern.test(uploadFile.name) === false) continue;
-      if (ruleEntry.Limit > 0 && uploadFile.size > ruleEntry.Limit * 1024) continue;
-      return { Path: ruleEntry.Path, Rule: ruleEntry };
+  // Explicit clipboard rules take precedence over ordinary rules even if a
+  // normal rule appears earlier. Group and rule order remain stable per pass.
+  let rulePasses = [false];
+  if (importContext.Clipboard === true) rulePasses = [true, false];
+  for (let clipboardPass of rulePasses) {
+    if (clipboardPass === false && importContext.Clipboard === true
+      && (moduleSettings.Clipoverride === true || importContext.Defaults === true)) continue;
+    for (let groupEntry of activeGroups) {
+      for (let ruleEntry of groupEntry.Rules) {
+        if ((ruleEntry.Cliponly === true) !== clipboardPass) continue;
+        let compiledPattern = CompilePattern(ruleEntry.Regex);
+        if (compiledPattern === null && clipboardPass === false) continue;
+        if (compiledPattern !== null && compiledPattern.test(uploadFile.name) === false) continue;
+        if (ruleEntry.Limit > 0 && uploadFile.size > ruleEntry.Limit * 1024) continue;
+        let targetPath = ruleEntry.Path;
+        if (clipboardPass === true && targetPath.length === 0) targetPath = moduleSettings.Clippath;
+        return { Path: targetPath, Rule: ruleEntry, Group: groupEntry.Identifier };
+      }
     }
   }
+  if (importContext.Clipboard === true) return { Path: moduleSettings.Clippath, Rule: null, Group: selectedIdentifier };
   let defaultRule = null;
-  if (allGroups === false) defaultRule = activeGroups[0]?.Rules.find(ruleEntry => ruleEntry.Default === true) ?? null;
+  if (allGroups === false) defaultRule = activeGroups[0]?.Rules.find(ruleEntry => ruleEntry.Default === true && ruleEntry.Cliponly !== true) ?? null;
   return { Path: ResolveFallback(activeGroups, moduleSettings.Fallback, allGroups), Rule: defaultRule };
 }
 
@@ -304,12 +333,26 @@ export async function EnsureDirectory(filePicker, targetPath, knownPaths = new S
  * ReportResult receives {Name,Path,Status,Error}; Status is "Uploading",
  * "Uploaded", or "Failed". Returns Promise<void>, continuing after each failure.
  */
-export async function UploadBatch(uploadFiles, moduleSettings, allGroups, selectedIdentifier, filePicker, ReportResult) {
+export async function UploadBatch(uploadFiles, moduleSettings, allGroups, selectedIdentifier, filePicker, ReportResult, importContext = {}) {
   let knownPaths = new Set();
-  for (let uploadFile of uploadFiles) {
+  for (let sourceFile of uploadFiles) {
+    let uploadFile = sourceFile;
     let targetPath = "";
     try {
-      let routeResult = ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier);
+      let routeResult = ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier, importContext);
+      let actionSettings = routeResult.Rule?.Action;
+      let clipboardFlag = importContext.Clipboard === true;
+      if (actionSettings?.Function === "clipboard") {
+        // This action is preprocessing, never a second upload after storage.
+        clipboardFlag = true;
+        routeResult = ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier, { Clipboard: true, Defaults: true });
+        if (routeResult.Rule?.Action !== undefined) actionSettings = routeResult.Rule.Action;
+      }
+      if (clipboardFlag === true) {
+        let imageFormat = moduleSettings.Clipformat;
+        if (routeResult.Rule?.Cliponly === true && routeResult.Rule.Clipformat !== "default") imageFormat = routeResult.Rule.Clipformat;
+        uploadFile = await PrepareClipboardFile(sourceFile, moduleSettings, imageFormat, routeResult.Group ?? selectedIdentifier);
+      }
       targetPath = routeResult.Path;
       ReportResult({ Name: uploadFile.name, Path: targetPath, Status: "Uploading" });
       await EnsureDirectory(filePicker, targetPath, knownPaths);
@@ -320,7 +363,7 @@ export async function UploadBatch(uploadFiles, moduleSettings, allGroups, select
         throw new Error(errorMessage);
       }
       targetPath = uploadResult.path;
-      try { await ExecuteActions(uploadFile, uploadResult.path, routeResult.Rule?.Action, moduleSettings); }
+      try { await ExecuteActions(uploadFile, uploadResult.path, actionSettings, moduleSettings); }
       catch (actionError) {
         ReportResult({ Name: uploadFile.name, Path: targetPath, Status: "Uploaded", Error: actionError.message });
         continue;

@@ -127,3 +127,7 @@ API references: [ApplicationV2](https://foundryvtt.com/api/classes/foundry.appli
 In Configure Settings > Quick File Upload > Window and appearance, set the clipboard button name and color, and the initial state of All groups (default: checked). These settings also participate in JSON export/import. Reopen the upload window to apply the initial checkbox state.
 
 Click the pad text and press Ctrl+V, or use Clipboard import to read images or HTML/text. The browser may request clipboard permission; if access fails, the module focuses the pad and explains the Ctrl+V alternative. The cloud icon opens local file selection; the text below it remains outside the button. Drag and drop works across the whole pad, including the clipboard button, within its configured dimensions. Foundry file browser below Upload actions and clipboard defaults opens the native server file browser at the fallback folder; existing server files are not re-uploaded.
+
+## Version 1.11.0 clipboard processing
+
+See [Clipboard Import](../docs/clipboard-import.md) for the new menu, clipboard-only rule matching, format conversion, fallback precedence, preprocessing action and reusable naming API. The implementation is split into `clipboard.js` (image preparation), `name-builder.js` (portable naming and storage adapter) and `name-editor.js` (modal Foundry v14 UI). Clipboard source metadata is passed explicitly from paste/button handlers to the upload pipeline; the File object is never mutated.

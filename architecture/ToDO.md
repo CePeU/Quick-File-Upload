@@ -31,17 +31,41 @@ If you need more context you can look into History.md which will hold all histor
 # BUG
 No open Bug
 
-# Implemented in 1.10.0 (2026-11-01)
-All four changes below are implemented. Settings: Window and appearance (clipboard button name/color and initial All groups state).
-
 # Change
-If I click the drop pad then sometimes I get the button there for the local file selection dialog. Also then CTRL+V for the clipboard insert does not work. 
 
-1) Add a button for clipboard import below the drop pad but still in the drop pad area (so calculations made on size of that arrea also apply to that button). The button should be colored differently (the color should be selectable and be able to be set in the settings). The buttons name should also be customizable in the settings. The button should have a tooltip with a description of its function. Default name of the button should be "Clipboard import"
-Ideally an active drop pad still allows for a CTRL+V import - but I am not sure if a button is needed for that.
+Umgesetzt in Version 1.11.0 (2026-11-01): Punkte 1 bis 7. Clipboard-Standards können normale Datei-Regeln überspringen; explizite Clipboard-Regeln behalten Vorrang. Die Aktion verarbeitet die gewählte Datei vor dem Upload. Dokumentation: docs/clipboard-import.md.
 
-2) Make the local file selection dialog button in the drop pad smaller. Ideally it only encompasses the "cloud" symbol. The drop pad text should be displayed below the cloud symbol as it is the case allready and not be part of the button. Draging and dropping onto the pad should still be possible. If the drag and drop operation requires a button to be placed in the drop pad area, then that button for file selection should be moved out of the drop pad area and placed in the section where the checkbox all groups are displayed and then the file selection dialog button should not be part of the drop pad area at all. Place the button in that caseat the top of the button list in that section.
+1) Füge den Regeln eine weitere Option hinzu um festzulegen ob ein Clipboard import stattgefunden hat. Diese Regel greift dann nur wenn es sich um einen Clipboard import handelt.
 
-3) Add a button to get the Foundry file selection dialog to the section encompassing the all Group selection checkbox. Place it below the button "Upload-Aktionen und Zwischenablage".
+2) Handelt es sich bei dem Clipboard import um ein Bild kann man hier auch festlegen ob es als PNG, WebP oder JPG gespeichert werden soll oder den in den settings gespeicherten Standardeintrag nutzen. (Das Modul soll das format erkennen und gegebenenfalls auch in das entsprechende korrekt format überführen)
 
-4) I did not find settings to set a defaul for the checkbox "Alle Gruppen" if there is one allready then tell me where to find it. If it is not yet implemented then implement it so the default state of the "Alle Gruppen" Checkbox can be set in the Foundry settings.
+3) Erweitere die Settings mit einem neuen Eintrag "Clipboard Import" der es erlaubt festzulegen in welchem Format der Clipboard import default mäßig stattfindet wenn es sich um ein Bild handelt. Das Bild sollte als PNG, Webp oder jpg gespeichert werden können.
+
+4) Füge den Settings einen Eintrag hinzu der es erlaubt den Standard Clipboard speicherpfad festzulegen bzw. fallback falls der Pfad nicht in den Regeln definiert ist.
+
+5) Füge den Clipboard settings einen Eintrag hinzu der es erlaubt festzulegen das alle Clipboard imports nach den Regeln die in den Settings abgelegt sind behandelt werden. Eine spezifische Clipboard Regel in einer der Regeln hat jedoch vorrang vor der Standard clipboard Regel.
+
+6) Füge den Clipboard settings einen Eintrag hinzu der es erlaubt festzulegen mit welchen Standardnamen ein clipboard import erfolgt und wie eine Namenserweiterung erzeugt wird. Mir schwebt für die Namenserweiterung ein separates Modal Fenster vor in dem mehrere Einträge vorhanden sind die per drag and drop sortiert werden können und in die Einträge aus einem Nebenfenster/Nebenfeld hineingezogen werden. Andere wählbare Einträge aus einem anderen Fenster des Modal sind Jahr, Tag, Monat, Stunde, Minute, Sekunde, Trennzeichen (z.B.Punkt, unterstrich, dash, Leerzeichen), Vergangene Sekunden (Zeitstempel), Zufallszahl, hash (sha256), beim Import aktiver Gruppenname. Die Einträge aus dem Fenster sind erweiterbar und löschbar. So kann ein Trennzeicheneintrag hinzugefügrt werden und definiert werden welches Zeichen zu nutzen ist. Für das Jahr, den Tag, den Monat, die Stunde, Minute und die Sekunde können die üblichen definitionen verwendet werden (zb. YYYY oder YY, MM, MMM, DD, HH, mm, ss) oder zB. YYYY-MM-DD etc. Für Zufallszahlen kann die Anzahl der Stellen definiert werden. Per plus button können neue Einträge erzeugt werden und per trash button gelöscht. Ein doppelklick öffnet die Definitionsmaske für Zeichenart, Anzahl stellen etc.
+Die per drag and drop herübergezogenen Namenserweiterungen können per trash button entfernt werden.
+
+
+Beispiel wie ein Name gebildet wird:
+Standardname: clipboard-image
+Erweiterung 1 Eintrag: Trennzeichen (_)
+Erweiterung 2 Eintrag: Jahr (YYYY)
+Erweiterung 3 Eintrag: Trennzeichen (_)
+Erweiterung 4 Eintrag: Monat (MM)
+Erweiterung 5 Eintrag: Trennzeichen (_)
+Erweiterung 6 Eintrag: Zufallszahl (4))
+
+Ergebnis wäre z.B: clipboard-image_2024_10_1234.png
+
+Ergibt sich kein Name so wird "clipboard_" gewählt und sekunden seit 1970 verwendet.
+
+Erzeuge den Code in diesem Fall als eigenständigen Datei die per Import eingebunden wird und eine funktion zur verfügung stellt die den Namen liefert und an die man einen Settingseintrag übergibt in dem die für diese funktionalität notwendigen Einträge abgelegt werden.
+
+Ziel wäre es diesen Code wie eine library weiterverwenden zu können. Mit dem funktionsaufruf übergibt man dem Code wo er seine settings speichern kann und von wo er seine settings liest.
+Die Funktion liefert als ergebnis den fertigen namen.
+
+
+7) Füge eine weitere vordefinierte Aktion hinzu "Clipboard Import". Die Ausgewählte Gruppe verhält sich dann als hätte sie einen Clipboard import mit der Standardauswahl für die Bild Dateiendung.

@@ -3,7 +3,7 @@ import { ResolveDimension, InsertControl } from "./core.js";
 import { ReadSettings } from "./storage.js";
 import { ApplyRuleColors } from "./ui.js";
 import { UploadApplication, CanUpload } from "./upload.js";
-import { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication } from "./configuration.js";
+import { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication, ClipboardApplication } from "./configuration.js";
 
 let uploadWindow = null;
 
@@ -64,6 +64,10 @@ Hooks.once("init", () => {
   game.settings.registerMenu(QFU_MODULE_ID, "actions", {
     name: "QFU.ActionDefaults", label: "QFU.ActionDefaults", icon: "fa-solid fa-bolt", type: ActionsApplication, restricted: true
     // name: "Upload actions and clipboard defaults", label: "Upload actions and clipboard defaults", icon: "fa-solid fa-bolt", type: ActionsApplication, restricted: true
+  });
+  game.settings.registerMenu(QFU_MODULE_ID, "clipboard", {
+    name: "QFU.ClipboardSettings", label: "QFU.ClipboardSettings", icon: "fa-solid fa-clipboard", type: ClipboardApplication, restricted: true
+    // name: "Clipboard Import", label: "Clipboard Import", icon: "fa-solid fa-clipboard", type: ClipboardApplication, restricted: true
   });
   game.modules.get(QFU_MODULE_ID).api = { Upload: OpenUpload, Settings: OpenSettings };
 });

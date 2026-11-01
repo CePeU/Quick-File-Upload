@@ -79,6 +79,18 @@
 .qu-toggle { flex-direction: column; align-items: stretch; gap: 8px; }
 .qu-toggle button { height: auto; white-space: normal; flex-shrink: 0; }
 .qu-toggle > label { margin-top: auto; }
+.qu-clipboard-rule { grid-column: 1 / -1; }
+.qu-name-dialog .window-content { overflow: auto; }
+.qu-name-editor { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.qu-name-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; min-height: 0; }
+.qu-name-columns section { min-width: 0; }
+.qu-name-tokens { list-style: none; padding: 8px; margin: 0 0 8px; border: 1px dashed currentColor; border-radius: 6px; min-height: 100px; max-height: 360px; overflow: auto; }
+.qu-name-token { display: flex; align-items: center; gap: 4px; padding: 6px; margin: 4px 0; border: 1px solid var(--color-border-light-primary, #777); border-radius: 4px; cursor: grab; }
+.qu-name-token > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.qu-name-token button { flex: 0 0 auto; width: auto; min-width: 28px; height: auto; white-space: normal; }
+.qu-name-preview { overflow-wrap: anywhere; padding: 8px; border: 1px solid currentColor; }
+.qu-token-definition { display: flex; flex-direction: column; gap: 10px; }
+.qu-token-definition label { display: flex; flex-direction: column; gap: 5px; }
 .qu-journal-list { grid-column: 1 / -1; overflow-wrap: anywhere; }
 .qu-journal-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 0; }
 .qu-journal-row span { overflow-wrap: anywhere; }
