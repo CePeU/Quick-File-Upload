@@ -25,6 +25,7 @@ If you need more context you can look into History.md which will hold all histor
 - name own code properties with a capital letter but do not use camel case for them and if possible restrict them to one word only
 - leave Foundry methods and functions and constants untouched by the naming convention rules 
 - passe die module.json versionsnummer an nachdem die changes oder bugs bearbeitet wurden nutze das schema "major.minor.patch". Erzeuge einen lokalen git commit mit aussagekräftiger commit Nachricht
+- Die CHANGELOG.md Datei ist im Verzeichnis docs zu finden
 
 
 # BUG

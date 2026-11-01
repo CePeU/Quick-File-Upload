@@ -1,3 +1,7 @@
+---
+title: Quick File Upload
+---
+
 # Quick File Upload
 
 ## What it does
@@ -15,7 +19,7 @@ Optional actions can post an image to chat, show it to selected players, create 
 - As a GM, open its configuration under **Configure Settings → Module Settings**. Set a fallback upload folder and optionally add groups with rules for filename patterns, maximum file sizes, and destination folders. Rules are checked in order; the first matching rule wins.
 - Open the upload window using the cloud-upload button in Foundry's scene controls.
 - Leave **All groups** checked to evaluate all included groups, or uncheck it and select a single group. Files without a matching rule use the module fallback folder, or the selected group's default rule when one is configured.
-- Drop local files onto the upload pad, or click it to select files. Focus the pad and press **Ctrl+V** to paste clipboard images or text. Check the results list for each file's destination and upload status.
+- Drop local files onto the upload pad, or click it to select files (click on the cloud symbol !). Focus the pad and press **Ctrl+V** to paste clipboard images or text or use the button available for this action. Check the results list for each file's destination and upload status.
 - Optionally configure actions on individual rules to share uploaded images, create journal pages, or execute a macro. Use the module's help menu for details.
 
 Uploading requires Foundry's file-upload permission. Only GMs can save module settings.
