@@ -178,6 +178,14 @@
     "TokenRandom": "Zufallszahl (Dezimalstellen)",
     "TokenHash": "SHA-256 des gespeicherten Inhalts",
     "TokenGroup": "Aktiver Gruppenname",
-    "Ruleformat": "Clipboard-Bildformat"
+    "Ruleformat": "Clipboard-Bildformat",
+    "Choice_manual": "Manuell benamen",
+    "ManualName": "Dateiname ohne Dateiendung",
+    "ManualCopy": "Benennungsschema des Clipboard-Imports übernehmen",
+    "ManualIndividual": "Jede Datei einzeln benamen",
+    "ManualBatchHint": "Der gemeinsame Basisname erhält für jede Datei die Namenserweiterungen des Clipboard-Imports. Bei Einzelbenennung diesen Dialog bestätigen, um die Namen jeder Datei einzugeben.",
+    "ManualInvalid": "Bitte einen gültigen Dateinamen eingeben.",
+    "ManualOk": "OK – Import starten",
+    "Cancel": "Abbrechen"
   }
 }

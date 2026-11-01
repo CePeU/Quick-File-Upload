@@ -26,3 +26,15 @@ Uploading requires Foundry's file-upload permission. Only GMs can save module se
 ## Clipboard Import
 
 Version 1.11.0 adds clipboard-only rules, real PNG/WebP/JPG conversion, clipboard default folders and a modal filename builder. Open **Configure Settings > Quick File Upload > Clipboard Import**. See [[clipboard-import|Clipboard Import settings and naming library]] for routing priority, date/time tokens, drag-and-drop name building and examples.
+
+## Manual naming
+
+Select **Manual naming** as a rule's built-in action. Before uploading, a modal asks for a filename **without its extension**. **Use clipboard naming scheme** copies the complete configured clipboard name for a single file. File routing still uses the original filename; manual naming changes the saved name.
+
+For multiple files, enter a shared base name. The shortcut copies only the clipboard base; the configured naming extensions are generated separately for every file using that base. For example, a base of `handout` and an underscore/group token sequence produce `handout_Maps.png`. Duplicate manual names in the same batch folder gain `-2`, `-3`, etc.
+
+Enable **Name each file separately** and confirm the batch dialog to enter the exact stem for each file matched by a manual-naming rule. Separate names do not automatically receive the batch naming extensions. The clipboard shortcut remains available in each individual dialog.
+
+All naming dialogs finish before the first upload. **Cancel** or closing any naming dialog cancels the entire import. Invalid filename characters are removed; actual file extensions, clipboard image conversion and optional rule macros remain supported.
+
+The main scene-control button supports Foundry v13 and v14. Reusable control registration, ordering and click binding are exported from `scripts/scene-controls.js`; callers supply identifiers, labels, placement, generation and their own application-opening callback.

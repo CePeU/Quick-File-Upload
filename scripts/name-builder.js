@@ -131,6 +131,13 @@ export async function GenerateFileName(nameSettings, nameContext = {}) {
       nameText += contentHash;
     }
   }
+  return SanitizeFileName(nameText, dateValue);
+}
+
+/* Return a portable filename stem, at most 220 characters. Empty names use the
+ * clipboard timestamp fallback; Windows device names receive an underscore.
+ */
+export function SanitizeFileName(nameText, dateValue = new Date()) {
   let cleanName = CleanNamePart(nameText).slice(0, 220).replace(/[. ]+$/g, "");
   if (cleanName.length === 0) cleanName = `clipboard_${Math.floor(dateValue.getTime() / 1000)}`;
   if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(cleanName) === true) cleanName = `_${cleanName}`;

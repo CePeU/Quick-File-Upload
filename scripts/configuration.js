@@ -166,7 +166,7 @@ export class ConfigurationApplication extends ContentApplication {
     macroField.Input.addEventListener("change", UpdateMacro);
     if (actionSettings.Macro.length > 0) UpdateMacro();
     actionPanel.append(macroField.Container, macroName,
-      this.CreateChoice("Function", actionSettings.Function, ["none", "chat", "image", "journalimage", "journaltext", "choose", "clipboard"]));
+      this.CreateChoice("Function", actionSettings.Function, ["none", "chat", "image", "journalimage", "journaltext", "choose", "clipboard", "manual"]));
     let beforeField = CreateField("Before", game.i18n.localize("QFU.MacroBefore"), actionSettings.Before, "checkbox");
     // let beforeField = CreateField("Before", game.i18n.localize("Run macro before built-in action"), actionSettings.Before, "checkbox");
     actionPanel.append(beforeField.Container);

@@ -1,5 +1,6 @@
+import { RegisterActionControl, BindActionControl } from "./scene-controls.js";
 import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS } from "./settings.js";
-import { ResolveDimension, InsertControl } from "./core.js";
+import { ResolveDimension } from "./core.js";
 import { ReadSettings } from "./storage.js";
 import { ApplyRuleColors } from "./ui.js";
 import { UploadApplication, CanUpload } from "./upload.js";
@@ -75,39 +76,14 @@ Hooks.once("init", () => {
 Hooks.on("getSceneControlButtons", controlRecord => {
   if (CanUpload() === false) return;
   let moduleSettings = ReadSettings();
-  let uploadTool = {
-    name: QFU_MODULE_ID, title: "QFU.Title", icon: "fa-solid fa-cloud-arrow-up",
-    // name: QFU_MODULE_ID, title: "Quick File Upload", icon: "fa-solid fa-cloud-arrow-up",
-    button: true, visible: true, onChange: OpenUpload
-  };
-  if (moduleSettings.Placement === "sub" && controlRecord[moduleSettings.Parent] !== undefined) {
-    controlRecord[moduleSettings.Parent].tools ??= {};
-    InsertControl(controlRecord[moduleSettings.Parent].tools, QFU_MODULE_ID, uploadTool, moduleSettings.Order);
-  } else {
-    let mainControl = {
-      name: QFU_MODULE_ID, title: "QFU.Title", icon: uploadTool.icon, visible: true,
-      // name: QFU_MODULE_ID, title: "Quick File Upload", icon: uploadTool.icon, visible: true,
-      tools: {}
-    };
-    if (moduleSettings.Placement === "main-sub") {
-      // Leave the button tool inactive so every submenu click invokes it.
-      mainControl.tools[QFU_MODULE_ID] = { ...uploadTool, order: 0 };
-    } else {
-      mainControl.onChange = (controlEvent, activeFlag) => { if (activeFlag === true) return OpenUpload(); };
-    }
-    InsertControl(controlRecord, QFU_MODULE_ID, mainControl, moduleSettings.Order);
-  }
+  RegisterActionControl(controlRecord, {
+    Identifier: QFU_MODULE_ID, Title: "QFU.Title", Icon: "fa-solid fa-cloud-arrow-up",
+    // Identifier: QFU_MODULE_ID, Title: "Quick File Upload", Icon: "fa-solid fa-cloud-arrow-up",
+    Placement: moduleSettings.Placement, Parent: moduleSettings.Parent, Order: moduleSettings.Order
+  }, OpenUpload, Number(game.release?.generation ?? 14));
 });
 
-// Main controls are selected only once by Foundry. Intercept this action button
-// before delegated selection so every click opens it without an empty tool menu.
 Hooks.on("renderSceneControls", controlApplication => {
   if (ReadSettings().Placement === "main-sub") return;
-  let controlButton = controlApplication.element.querySelector(`[data-control="${QFU_MODULE_ID}"]`);
-  if (controlButton === null) return;
-  controlButton.onclick = controlEvent => {
-    controlEvent.preventDefault();
-    controlEvent.stopImmediatePropagation();
-    OpenUpload();
-  };
+  BindActionControl(controlApplication.element, QFU_MODULE_ID, OpenUpload);
 });

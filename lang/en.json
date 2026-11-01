@@ -178,6 +178,14 @@
     "TokenRandom": "Random decimal digits",
     "TokenHash": "SHA-256 of the saved content",
     "TokenGroup": "Active group name",
-    "Ruleformat": "Clipboard image format"
+    "Ruleformat": "Clipboard image format",
+    "Choice_manual": "Manual naming",
+    "ManualName": "Filename without extension",
+    "ManualCopy": "Use clipboard naming scheme",
+    "ManualIndividual": "Name each file separately",
+    "ManualBatchHint": "The shared base receives the clipboard naming extensions for each file. With separate naming, confirm this base to continue to each file.",
+    "ManualInvalid": "Enter a valid filename.",
+    "ManualOk": "OK – start import",
+    "Cancel": "Cancel"
   }
 }

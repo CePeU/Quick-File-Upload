@@ -349,6 +349,8 @@ export class UploadApplication extends ContentApplication {
           else this.History.push(resultEntry);
           this.UpdateResults();
         }, importContext);
+    } catch (uploadError) {
+      ui.notifications.error(uploadError.message);
     } finally {
       this.Busy = false;
       this.Snapshot = null;

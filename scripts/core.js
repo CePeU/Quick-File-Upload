@@ -1,3 +1,4 @@
+import { CollectManualNames } from "./manual-naming.js";
 import { QFU_SETTINGS, QFU_MODULE_ID, QFU_SCHEMA_VERSION, QFU_CLIP_RULE_SETTINGS } from "./settings.js";
 import { ExecuteActions, ValidateActions } from "./actions.js";
 import { ValidateClipboard, PrepareClipboardFile } from "./clipboard.js";
@@ -282,17 +283,7 @@ export function ResolveRouting(uploadFile, moduleSettings, allGroups, selectedId
   return { Path: ResolveFallback(activeGroups, moduleSettings.Fallback, allGroups), Rule: defaultRule };
 }
 
-/* Insert a Foundry control at positionIndex: -1 last, 0 first, larger integers
- * indexed or appended. Mutates controlRecord and its Foundry order properties.
- */
-export function InsertControl(controlRecord, controlName, controlValue, positionIndex) {
-  let orderedEntries = Object.entries(controlRecord).filter(([entryName]) => entryName !== controlName)
-    .sort((firstEntry, secondEntry) => (firstEntry[1].order ?? 0) - (secondEntry[1].order ?? 0));
-  let insertIndex = Math.min(positionIndex, orderedEntries.length);
-  if (positionIndex === -1) insertIndex = orderedEntries.length;
-  orderedEntries.splice(insertIndex, 0, [controlName, controlValue]);
-  orderedEntries.forEach(([entryName, controlEntry], entryIndex) => { controlEntry.order = entryIndex; controlRecord[entryName] = controlEntry; });
-}
+export { InsertControl } from "./scene-controls.js";
 
 /* Ensure a relative directory exists using a Foundry FilePicker class and a
  * Set of known paths. Returns Promise<void>; creation errors propagate.
@@ -329,31 +320,62 @@ export async function EnsureDirectory(filePicker, targetPath, knownPaths = new S
   }
 }
 
+/* Resolve storage and preprocessing actions against the original filename.
+ * Clipboard actions may reroute to explicit clipboard rules or defaults.
+ */
+export function ResolveUploadRoute(sourceFile, moduleSettings, allGroups, selectedIdentifier, importContext) {
+  let routeResult = ResolveRouting(sourceFile, moduleSettings, allGroups, selectedIdentifier, importContext);
+  let actionSettings = routeResult.Rule?.Action;
+  let clipboardFlag = importContext.Clipboard === true;
+  if (actionSettings?.Function === "clipboard") {
+    clipboardFlag = true;
+    routeResult = ResolveRouting(sourceFile, moduleSettings, allGroups, selectedIdentifier, { Clipboard: true, Defaults: true });
+    if (routeResult.Rule?.Action !== undefined) actionSettings = routeResult.Rule.Action;
+  }
+  return { Route: routeResult, Action: actionSettings, Clipboard: clipboardFlag };
+}
+
 /* Upload File[] using an immutable settings snapshot and boolean routing mode.
  * ReportResult receives {Name,Path,Status,Error}; Status is "Uploading",
  * "Uploaded", or "Failed". Returns Promise<void>, continuing after each failure.
  */
 export async function UploadBatch(uploadFiles, moduleSettings, allGroups, selectedIdentifier, filePicker, ReportResult, importContext = {}) {
+  // Resolve names first so closing any naming dialog aborts every upload.
+  let plannedUploads = uploadFiles.map(sourceFile => ({ File: sourceFile,
+    ...ResolveUploadRoute(sourceFile, moduleSettings, allGroups, selectedIdentifier, importContext) }));
+  let manualEntries = plannedUploads.filter(uploadPlan => uploadPlan.Action?.Function === "manual")
+    .map(uploadPlan => ({ File: uploadPlan.File, Group: uploadPlan.Route.Group ?? selectedIdentifier }));
+  let manualNames = await CollectManualNames(manualEntries, moduleSettings.Clipname, uploadFiles.length > 1);
+  if (manualNames === null) return;
   let knownPaths = new Set();
-  for (let sourceFile of uploadFiles) {
+  let usedNames = new Set();
+  for (let uploadPlan of plannedUploads) {
+    let sourceFile = uploadPlan.File;
     let uploadFile = sourceFile;
     let targetPath = "";
     try {
-      let routeResult = ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier, importContext);
-      let actionSettings = routeResult.Rule?.Action;
-      let clipboardFlag = importContext.Clipboard === true;
-      if (actionSettings?.Function === "clipboard") {
-        // This action is preprocessing, never a second upload after storage.
-        clipboardFlag = true;
-        routeResult = ResolveRouting(uploadFile, moduleSettings, allGroups, selectedIdentifier, { Clipboard: true, Defaults: true });
-        if (routeResult.Rule?.Action !== undefined) actionSettings = routeResult.Rule.Action;
-      }
+      let routeResult = uploadPlan.Route;
+      let actionSettings = uploadPlan.Action;
+      let clipboardFlag = uploadPlan.Clipboard;
       if (clipboardFlag === true) {
         let imageFormat = moduleSettings.Clipformat;
         if (routeResult.Rule?.Cliponly === true && routeResult.Rule.Clipformat !== "default") imageFormat = routeResult.Rule.Clipformat;
         uploadFile = await PrepareClipboardFile(sourceFile, moduleSettings, imageFormat, routeResult.Group ?? selectedIdentifier);
       }
       targetPath = routeResult.Path;
+      if (manualNames.has(sourceFile) === true) {
+        // Retain the actual converted suffix, or no suffix for extensionless files.
+        let fileExtension = uploadFile.name.match(/\.[^.]+$/)?.[0] ?? "";
+        let nameStem = manualNames.get(sourceFile);
+        let finalName = `${nameStem}${fileExtension}`;
+        let duplicateIndex = 2;
+        while (usedNames.has(`${targetPath}/${finalName}`.toLowerCase()) === true) {
+          finalName = `${nameStem}-${duplicateIndex}${fileExtension}`;
+          duplicateIndex++;
+        }
+        uploadFile = new File([uploadFile], finalName, { type: uploadFile.type, lastModified: uploadFile.lastModified });
+      }
+      usedNames.add(`${targetPath}/${uploadFile.name}`.toLowerCase());
       ReportResult({ Name: uploadFile.name, Path: targetPath, Status: "Uploading" });
       await EnsureDirectory(filePicker, targetPath, knownPaths);
       let uploadResult = await filePicker.upload("data", targetPath, uploadFile, {}, { notify: false });

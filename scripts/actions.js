@@ -10,7 +10,7 @@ export function ValidateActions(moduleSettings, actionSettings = QFU_ACTION_SETT
     || typeof moduleSettings.Users !== "string" || ["all", "playersonly", "observer", "selected", "choose"].includes(moduleSettings.Audience) === false
     || ["none", "chat", "players"].includes(moduleSettings.Display) === false
     || actionSettings === null || typeof actionSettings !== "object" || typeof actionSettings.Macro !== "string"
-    || typeof actionSettings.Before !== "boolean" || ["none", "chat", "image", "journalimage", "journaltext", "choose", "clipboard"].includes(actionSettings.Function) === false) {
+    || typeof actionSettings.Before !== "boolean" || ["none", "chat", "image", "journalimage", "journaltext", "choose", "clipboard", "manual"].includes(actionSettings.Function) === false) {
     throw new Error(game.i18n.localize("QFU.InvalidAction"));
     // throw new Error(game.i18n.localize("Check the upload action settings."));
   }
@@ -169,8 +169,8 @@ export async function ExecuteBuiltin(uploadFile, savedPath, functionName, module
     if (chosenActions === null || chosenActions.length === 0) return;
     functionName = chosenActions[0];
   }
-  // Clipboard preprocessing has already happened before the confirmed upload.
-  if (functionName === "none" || functionName === "clipboard") return;
+  // Clipboard processing and manual naming happen before the confirmed upload.
+  if (functionName === "none" || functionName === "clipboard" || functionName === "manual") return;
   let imageFlag = uploadFile.type?.startsWith("image/") === true || /\.(png|jpe?g|webp|gif|svg|avif|bmp)$/i.test(uploadFile.name);
   if (functionName !== "journaltext" && imageFlag === false) throw new Error(game.i18n.localize("QFU.ImageRequired"));
   // if (functionName !== "journaltext" && imageFlag === false) throw new Error(game.i18n.localize("This action requires an image file."));

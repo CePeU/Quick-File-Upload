@@ -29,43 +29,13 @@ If you need more context you can look into History.md which will hold all histor
 
 
 # BUG
-No open Bug
+Umgesetzt in Version 1.12.0 (2026-11-01): v13-kompatible Hauptschaltfläche mit wiederverwendbaren, modulunabhängigen Hilfsfunktionen in scripts/scene-controls.js.
+
+1) In der Foundry Version v13 funktioniert die Szenensteuerung nicht für die Hauptschaltfläche. Scheinbar gibt es dort einen Unterschied zwischen v13 und v14. Untermenüs funktioniert noch. Vermutlich müssen unterschiedliche vorgehensweisen je nachdem ob es v13 oder v14 ist implementiert werden. Die modularität der Lösung so dass das javascript für diese funktionalität auch in anderen Modulen verwendet werden kann soll aber beibehalten werden.
+
 
 # Change
 
-Umgesetzt in Version 1.11.0 (2026-11-01): Punkte 1 bis 7. Clipboard-Standards können normale Datei-Regeln überspringen; explizite Clipboard-Regeln behalten Vorrang. Die Aktion verarbeitet die gewählte Datei vor dem Upload. Dokumentation: docs/clipboard-import.md.
+Umgesetzt in Version 1.12.0 (2026-11-01): Aktion „Manuell benamen“ mit Clipboard-Schema, gemeinsamem Basisnamen, optionaler Einzelbenennung und vollständigem Abbruch vor dem ersten Upload. Dokumentation: docs/index.md.
 
-1) Füge den Regeln eine weitere Option hinzu um festzulegen ob ein Clipboard import stattgefunden hat. Diese Regel greift dann nur wenn es sich um einen Clipboard import handelt.
-
-2) Handelt es sich bei dem Clipboard import um ein Bild kann man hier auch festlegen ob es als PNG, WebP oder JPG gespeichert werden soll oder den in den settings gespeicherten Standardeintrag nutzen. (Das Modul soll das format erkennen und gegebenenfalls auch in das entsprechende korrekt format überführen)
-
-3) Erweitere die Settings mit einem neuen Eintrag "Clipboard Import" der es erlaubt festzulegen in welchem Format der Clipboard import default mäßig stattfindet wenn es sich um ein Bild handelt. Das Bild sollte als PNG, Webp oder jpg gespeichert werden können.
-
-4) Füge den Settings einen Eintrag hinzu der es erlaubt den Standard Clipboard speicherpfad festzulegen bzw. fallback falls der Pfad nicht in den Regeln definiert ist.
-
-5) Füge den Clipboard settings einen Eintrag hinzu der es erlaubt festzulegen das alle Clipboard imports nach den Regeln die in den Settings abgelegt sind behandelt werden. Eine spezifische Clipboard Regel in einer der Regeln hat jedoch vorrang vor der Standard clipboard Regel.
-
-6) Füge den Clipboard settings einen Eintrag hinzu der es erlaubt festzulegen mit welchen Standardnamen ein clipboard import erfolgt und wie eine Namenserweiterung erzeugt wird. Mir schwebt für die Namenserweiterung ein separates Modal Fenster vor in dem mehrere Einträge vorhanden sind die per drag and drop sortiert werden können und in die Einträge aus einem Nebenfenster/Nebenfeld hineingezogen werden. Andere wählbare Einträge aus einem anderen Fenster des Modal sind Jahr, Tag, Monat, Stunde, Minute, Sekunde, Trennzeichen (z.B.Punkt, unterstrich, dash, Leerzeichen), Vergangene Sekunden (Zeitstempel), Zufallszahl, hash (sha256), beim Import aktiver Gruppenname. Die Einträge aus dem Fenster sind erweiterbar und löschbar. So kann ein Trennzeicheneintrag hinzugefügrt werden und definiert werden welches Zeichen zu nutzen ist. Für das Jahr, den Tag, den Monat, die Stunde, Minute und die Sekunde können die üblichen definitionen verwendet werden (zb. YYYY oder YY, MM, MMM, DD, HH, mm, ss) oder zB. YYYY-MM-DD etc. Für Zufallszahlen kann die Anzahl der Stellen definiert werden. Per plus button können neue Einträge erzeugt werden und per trash button gelöscht. Ein doppelklick öffnet die Definitionsmaske für Zeichenart, Anzahl stellen etc.
-Die per drag and drop herübergezogenen Namenserweiterungen können per trash button entfernt werden.
-
-
-Beispiel wie ein Name gebildet wird:
-Standardname: clipboard-image
-Erweiterung 1 Eintrag: Trennzeichen (_)
-Erweiterung 2 Eintrag: Jahr (YYYY)
-Erweiterung 3 Eintrag: Trennzeichen (_)
-Erweiterung 4 Eintrag: Monat (MM)
-Erweiterung 5 Eintrag: Trennzeichen (_)
-Erweiterung 6 Eintrag: Zufallszahl (4))
-
-Ergebnis wäre z.B: clipboard-image_2024_10_1234.png
-
-Ergibt sich kein Name so wird "clipboard_" gewählt und sekunden seit 1970 verwendet.
-
-Erzeuge den Code in diesem Fall als eigenständigen Datei die per Import eingebunden wird und eine funktion zur verfügung stellt die den Namen liefert und an die man einen Settingseintrag übergibt in dem die für diese funktionalität notwendigen Einträge abgelegt werden.
-
-Ziel wäre es diesen Code wie eine library weiterverwenden zu können. Mit dem funktionsaufruf übergibt man dem Code wo er seine settings speichern kann und von wo er seine settings liest.
-Die Funktion liefert als ergebnis den fertigen namen.
-
-
-7) Füge eine weitere vordefinierte Aktion hinzu "Clipboard Import". Die Ausgewählte Gruppe verhält sich dann als hätte sie einen Clipboard import mit der Standardauswahl für die Bild Dateiendung.
+1) Füge eine weitere vordefinierte Aktion hinzu "Manual naming"/"Manuell benamen". Der Benutzer bekommt ein modal in das er in einem input Feld einen Namen eingeben kann das dann als Dateinamen zum speichern übernommen wird. Es gibt einen Button in dem modal um das Naming Schema des Clipboard importes in das input Feld zu übernehmen. Handelt es sich um einen mehrfach import dann wird nur der Standardname übernommen und die Regeln für die Namenserweiterung angewandt. Es gibt eine Checkbox in dem modal das angeklickt werden kann dass es erlaubt bei einem mehrfachimport jede einzelne Datei zu benamen. Es gibt einen OK button der dazu führt dass der Import gestartet wird. Es gibt einen Cancel Button der den import komplett abricht.

@@ -1,3 +1,12 @@
+## [1.12.0] / 2026-11-01
+### Added
+- Manual naming rule action with a modal filename input, clipboard naming shortcut, shared batch bases and optional separate names for each file.
+- All naming dialogs are confirmed before uploading; Cancel or closing any dialog aborts the entire import, including files using other actions.
+- Shared names expand clipboard naming tokens per file; repeated manual names in the same batch and folder receive numbered suffixes. File extensions and upload formats are preserved.
+- Reusable scene-control helpers in `scripts/scene-controls.js`, independent of module settings and upload code.
+### Fixed
+- The main scene-control button survives Foundry v13's removal of controls without tools. Repeated clicks open the uploader without changing the active canvas control. Foundry v14 retains its direct main control.
+
 ## [1.11.0] / 2026-11-01
 ### Added
 - Clipboard-only rules with PNG, WebP, JPG or inherited image formats, real browser image conversion, and independent clipboard fallback routing.
