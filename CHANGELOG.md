@@ -1,3 +1,11 @@
+## [1.10.0] / 2026-11-01
+### Added
+- Clipboard import button inside the drop pad, with configurable label and color, tooltip, and Ctrl+V fallback when browser clipboard access fails.
+- Foundry file browser button below upload-action settings.
+- Configurable initial All groups state in Window and appearance.
+### Fixed
+- Local file selection is limited to the cloud button; clicking the pad text focuses the pad for Ctrl+V while drag and drop remains available throughout the pad.
+
 ## [1.9.0] / 2026-10-25
 ### Added
 - Main control with submenu as a third scene-control placement.

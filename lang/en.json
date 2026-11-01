@@ -106,7 +106,7 @@
     "AllGroups": "All groups",
     "UploadArea": "File upload area",
     "DropLabel": "Drop files here",
-    "DropHint": "Drop files, click to browse, or focus this pad and press Ctrl+V",
+    "DropHint": "Drop files, click the cloud to browse, or click this text and press Ctrl+V",
     "ResultsLabel": "Upload results",
     "GroupList": "Routing groups",
     "NoGroups": "No groups configured.",
@@ -139,6 +139,14 @@
     "UnconfirmedUpload": "The server did not confirm the upload.",
     "DataSourceOnly": "Choose a folder in the user-data source.",
     "MainSubControl": "Main control with submenu",
-    "CloneEntry": "Clone entry"
+    "CloneEntry": "Clone entry",
+    "Cliplabel": "Clipboard button name (blank uses default)",
+    "Clipcolor": "Clipboard button color",
+    "Allgroups": "All groups selected when opening the upload window",
+    "LocalBrowse": "Choose local files",
+    "FoundryBrowse": "Foundry file browser",
+    "ClipboardImport": "Clipboard import",
+    "ClipboardHint": "Import images or HTML/text from the clipboard. You can also focus this pad and press Ctrl+V.",
+    "ClipboardUnavailable": "Clipboard access failed. Click the drop pad text and press Ctrl+V, or allow clipboard access in your browser."
   }
 }

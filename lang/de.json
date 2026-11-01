@@ -106,7 +106,7 @@
     "AllGroups": "Alle Gruppen",
     "UploadArea": "Datei-Upload-Bereich",
     "DropLabel": "Dateien hier ablegen",
-    "DropHint": "Dateien ablegen, zum Auswählen klicken oder dieses Pad fokussieren und Strg+V drücken",
+    "DropHint": "Dateien ablegen, zur Dateiauswahl auf die Wolke klicken oder auf diesen Text klicken und Strg+V drücken",
     "ResultsLabel": "Upload-Ergebnisse",
     "GroupList": "Regelgruppen",
     "NoGroups": "Keine Gruppen konfiguriert.",
@@ -139,6 +139,14 @@
     "UnconfirmedUpload": "Der Server hat den Upload nicht bestätigt.",
     "DataSourceOnly": "Wähle einen Ordner in der Benutzerdatenquelle.",
     "MainSubControl": "Hauptschaltfläche mit Untermenü",
-    "CloneEntry": "Eintrag klonen"
+    "CloneEntry": "Eintrag klonen",
+    "Cliplabel": "Name des Zwischenablage-Buttons (leer verwendet Standard)",
+    "Clipcolor": "Farbe des Zwischenablage-Buttons",
+    "Allgroups": "Alle Gruppen beim Öffnen des Upload-Fensters auswählen",
+    "LocalBrowse": "Lokale Dateien auswählen",
+    "FoundryBrowse": "Foundry-Dateibrowser",
+    "ClipboardImport": "Clipboard import",
+    "ClipboardHint": "Bilder oder HTML/Text aus der Zwischenablage importieren. Alternativ diese Fläche fokussieren und Strg+V drücken.",
+    "ClipboardUnavailable": "Zugriff auf die Zwischenablage fehlgeschlagen. Auf den Text der Drop-Fläche klicken und Strg+V drücken oder den Zugriff im Browser erlauben."
   }
 }

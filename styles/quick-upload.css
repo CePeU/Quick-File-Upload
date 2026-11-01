@@ -11,10 +11,11 @@
 .qu-toggle label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; cursor: pointer; }
 .qu-pad { margin: 10px 10px 0 0; padding: 12px; background: var(--qu-color); color: #fff; border: 2px dashed #ffffff70; border-radius: 12px; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: auto; transition: filter .15s, border-color .15s; }
 .qu-pad.qu-dragover { border-color: #fff; filter: brightness(1.25); }
-.qu-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 12px; width: 100%; min-height: 100px; height: auto; background: transparent; border: none; color: white; box-shadow: none; white-space: normal; }
+.qu-drop { display: flex; align-items: center; justify-content: center; align-self: center; flex: none; width: 3.5em; height: 3.5em; padding: 6px; background: transparent; color: white; }
 .qu-drop i { font-size: 2.5em; }
-.qu-drop strong { font-size: 1.3em; overflow-wrap: anywhere; }
-.qu-drop span { font-size: .85em; }
+.qu-pad-label { font-size: 1.3em; overflow-wrap: anywhere; text-align: center; margin: 8px 0; }
+.qu-pad-hint { font-size: .85em; text-align: center; }
+.qu-clipboard { flex: none; height: auto; min-height: 34px; margin-top: 12px; white-space: normal; overflow-wrap: anywhere; background: var(--qu-clipboard-color); color: white; }
 .qu-status { margin: 8px 0; font-size: .85em; }
 .qu-results { margin: 0; padding-left: 20px; max-height: 45%; overflow: auto; flex-shrink: 0; font-size: .85em; }
 .qu-results li { overflow-wrap: anywhere; margin: 4px 0; }

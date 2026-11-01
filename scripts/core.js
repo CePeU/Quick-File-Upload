@@ -78,6 +78,8 @@ export function ValidateSettings(sourceSettings) {
     }
   }
   if (typeof cleanSettings.Color !== "string" || /^#[\da-f]{6}$/i.test(cleanSettings.Color) === false
+    || typeof cleanSettings.Clipcolor !== "string" || /^#[\da-f]{6}$/i.test(cleanSettings.Clipcolor) === false
+    || typeof cleanSettings.Cliplabel !== "string" || typeof cleanSettings.Allgroups !== "boolean"
     || typeof cleanSettings.Label !== "string" || ["main", "main-sub", "sub"].includes(cleanSettings.Placement) === false
     || typeof cleanSettings.Parent !== "string" || cleanSettings.Parent.trim().length === 0) {
     throw new Error(game.i18n.localize("QFU.InvalidAppearance"));

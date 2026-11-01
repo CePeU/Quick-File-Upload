@@ -7,7 +7,7 @@ export const QFU_SCHEMA_VERSION = 2;
 export const QFU_SETTINGS = Object.freeze({
   Groups: [], Fallback: "assets", Placement: "main", Parent: "tokens", Order: 0,
   Width: "720", Height: "520", Padwidth: "50%", Padheight: "40%",
-  Headerheight: "15%", Color: "#24586b", Rulelight: "#e0e0e0", Ruledark: "#383838", Label: "", Clipboard: false,
+  Headerheight: "15%", Color: "#24586b", Rulelight: "#e0e0e0", Ruledark: "#383838", Label: "", Cliplabel: "", Clipcolor: "#6b4524", Allgroups: true, Clipboard: false,
   Journal: "", Journalprompt: true, Journaluuids: "", Journalpattern: "", Journalsort: false, Display: "none", Audience: "all", Users: "", Audienceprompt: false
 });
 
@@ -22,6 +22,6 @@ export const QFU_ACTION_SETTINGS = Object.freeze({ Macro: "", Before: false, Fun
 export const QFU_MENU_FIELDS = Object.freeze({
   Groups: ["Groups", "Fallback"],
   Controls: ["Placement", "Parent", "Order"],
-  Layout: ["Width", "Height", "Padwidth", "Padheight", "Headerheight", "Color", "Rulelight", "Ruledark", "Label"],
+  Layout: ["Width", "Height", "Padwidth", "Padheight", "Headerheight", "Color", "Rulelight", "Ruledark", "Label", "Cliplabel", "Clipcolor", "Allgroups"],
   Actions: ["Clipboard", "Journal", "Journalprompt", "Journaluuids", "Journalpattern", "Journalsort", "Users", "Audienceprompt", "Display", "Audience"]
 });

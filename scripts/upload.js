@@ -30,6 +30,7 @@ export class UploadApplication extends ContentApplication {
     };
     super({ ...applicationOptions, position: initialPosition });
     this.Baseline = { Width: initialPosition.width, Height: initialPosition.height };
+    this.All = moduleSettings.Allgroups;
     this.Selected = moduleSettings.Groups[0]?.Identifier ?? null;
   }
 
@@ -61,6 +62,10 @@ export class UploadApplication extends ContentApplication {
     dropPanel.setAttribute("aria-label", game.i18n.localize("QFU.UploadArea"));
     // dropPanel.setAttribute("aria-label", game.i18n.localize("File upload area"));
     dropPanel.tabIndex = 0;
+    // Clicking the pad text gives native paste events a stable focus target.
+    dropPanel.addEventListener("click", clickEvent => {
+      if (clickEvent.target.closest("button, input") === null) dropPanel.focus();
+    });
     rootElement.addEventListener("paste", pasteEvent => {
       // Keep paste in editable controls native even when application-wide paste is enabled.
       if (pasteEvent.target.closest('input, textarea, select, [contenteditable="true"]') !== null) return;
@@ -83,14 +88,27 @@ export class UploadApplication extends ContentApplication {
       // padLabel = game.i18n.localize("Drop files here");
     }
     let dropHint = game.i18n.localize("QFU.DropHint");
-    // let dropHint = game.i18n.localize("Drop files, click to browse, or focus this pad and press Ctrl+V");
-    dropButton.append(iconElement, CreateElement("strong", "", padLabel), CreateElement("span", "", dropHint));
+    // let dropHint = game.i18n.localize("Drop files, click the cloud to browse, or click this text and press Ctrl+V");
+    let browseLabel = game.i18n.localize("QFU.LocalBrowse");
+    // let browseLabel = game.i18n.localize("Choose local files");
+    dropButton.title = browseLabel;
+    dropButton.setAttribute("aria-label", browseLabel);
+    dropButton.append(iconElement);
+    let clipboardLabel = moduleSettings.Cliplabel;
+    if (clipboardLabel.trim().length === 0) {
+      clipboardLabel = game.i18n.localize("QFU.ClipboardImport");
+      // clipboardLabel = game.i18n.localize("Clipboard import");
+    }
+    let clipboardButton = CreateButton(clipboardLabel, () => this.ImportClipboard(), "qu-clipboard");
+    clipboardButton.style.setProperty("--qu-clipboard-color", moduleSettings.Clipcolor);
+    clipboardButton.title = game.i18n.localize("QFU.ClipboardHint");
+    // clipboardButton.title = game.i18n.localize("Import images or HTML/text from the clipboard. You can also focus this pad and press Ctrl+V.");
     let statusElement = CreateElement("p", "qu-status");
     statusElement.setAttribute("role", "status");
     let resultsList = CreateElement("ol", "qu-results");
     resultsList.setAttribute("aria-label", game.i18n.localize("QFU.ResultsLabel"));
     // resultsList.setAttribute("aria-label", game.i18n.localize("Upload results"));
-    dropPanel.append(dropButton, fileInput, statusElement, resultsList);
+    dropPanel.append(dropButton, CreateElement("strong", "qu-pad-label", padLabel), CreateElement("span", "qu-pad-hint", dropHint), clipboardButton, fileInput, statusElement, resultsList);
     fileInput.addEventListener("change", () => { this.UploadFiles(Array.from(fileInput.files)); fileInput.value = ""; });
     for (let eventType of ["dragenter", "dragover", "dragleave", "drop"]) {
       dropPanel.addEventListener(eventType, dropEvent => {
@@ -132,6 +150,12 @@ export class UploadApplication extends ContentApplication {
       togglePanel.prepend(CreateButton(configureLabel, () => new ConfigurationApplication().render({ force: true }), "qu-config"),
         CreateButton(actionsLabel, () => new ActionsApplication().render({ force: true }), "qu-actions"));
     }
+    let pickerLabel = game.i18n.localize("QFU.FoundryBrowse");
+    // let pickerLabel = game.i18n.localize("Foundry file browser");
+    let pickerButton = CreateButton(pickerLabel, () => {
+      new foundry.applications.apps.FilePicker.implementation({ type: "any", activeSource: "data", current: moduleSettings.Fallback }).render({ force: true });
+    }, "qu-file-browser");
+    togglePanel.insertBefore(pickerButton, toggleLabel);
     rootElement.append(folderPanel, togglePanel, dropPanel, sidebarPanel);
     return rootElement;
   }
@@ -167,6 +191,32 @@ export class UploadApplication extends ContentApplication {
     let topHeight = Math.max(headerHeight, Math.min(padHeight, rootElement.clientHeight * .8));
     rootElement.style.gridTemplateRows = `${Math.min(topHeight, rootElement.clientHeight)}px minmax(0, 1fr)`;
     rootElement.querySelector(".qu-pad").style.height = "auto";
+  }
+
+  /* Read browser clipboard items on an explicit click and route one preferred
+   * representation per item. Permission failures keep native Ctrl+V available.
+   */
+  async ImportClipboard() {
+    try {
+      let clipboardApi = window.navigator.clipboard;
+      if (typeof clipboardApi?.read !== "function") throw new Error("Clipboard unavailable");
+      let clipboardItems = await clipboardApi.read();
+      let uploadFiles = [];
+      for (let clipboardItem of clipboardItems) {
+        let contentType = clipboardItem.types.find(typeName => typeName.startsWith("image/"));
+        if (contentType === undefined && clipboardItem.types.includes("text/html") === true) contentType = "text/html";
+        if (contentType === undefined && clipboardItem.types.includes("text/plain") === true) contentType = "text/plain";
+        if (contentType === undefined) continue;
+        let contentBlob = await clipboardItem.getType(contentType);
+        let fileExtension = contentType.split("/")[1].replace("plain", "txt").replace("jpeg", "jpg").replace("svg+xml", "svg");
+        uploadFiles.push(new File([contentBlob], `clipboard-${Date.now()}-${uploadFiles.length}.${fileExtension}`, { type: contentType }));
+      }
+      await this.UploadFiles(uploadFiles);
+    } catch {
+      ui.notifications.warn(game.i18n.localize("QFU.ClipboardUnavailable"));
+      // ui.notifications.warn(game.i18n.localize("Clipboard access failed. Click the drop pad text and press Ctrl+V, or allow clipboard access in your browser."));
+      this.element?.querySelector(".qu-pad")?.focus();
+    }
   }
 
   /* Convert clipboard files or HTML/plain text to Files for normal routing.
@@ -226,6 +276,7 @@ export class UploadApplication extends ContentApplication {
     });
     this.element.querySelector(".qu-toggle input").disabled = this.Busy;
     this.element.querySelector(".qu-drop").disabled = this.Busy === true || CanUpload() === false || (this.All === false && activeGroups.length === 0);
+    this.element.querySelector(".qu-clipboard").disabled = this.element.querySelector(".qu-drop").disabled;
     this.element.querySelector(".qu-pad").setAttribute("aria-busy", String(this.Busy));
   }
 

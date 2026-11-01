@@ -458,6 +458,12 @@ export class ConfigurationApplication extends ContentApplication {
     // AddSection(scrollContent, game.i18n.localize("Window and appearance"), game.i18n.localize("Enter pixels (720) or percentages (75%). Window percentages use the viewport; pad and header percentages use the application. Blank pad name uses the translated default."));
     let layoutFields = CreateElement("div", "qu-fields");
     let fieldLabels = {
+      Cliplabel: game.i18n.localize("QFU.Cliplabel"),
+      // Cliplabel: game.i18n.localize("Clipboard button name (blank uses default)"),
+      Clipcolor: game.i18n.localize("QFU.Clipcolor"),
+      // Clipcolor: game.i18n.localize("Clipboard button color"),
+      Allgroups: game.i18n.localize("QFU.Allgroups"),
+      // Allgroups: game.i18n.localize("All groups selected when opening the upload window"),
       Width: game.i18n.localize("QFU.WidthLabel"),
       // Width: game.i18n.localize("Window width"),
       Height: game.i18n.localize("QFU.HeightLabel"),
@@ -479,7 +485,8 @@ export class ConfigurationApplication extends ContentApplication {
     };
     for (let [fieldName, fieldLabel] of Object.entries(fieldLabels)) {
       let inputType = "text";
-      if (["Color", "Rulelight", "Ruledark"].includes(fieldName) === true) inputType = "color";
+      if (["Color", "Rulelight", "Ruledark", "Clipcolor"].includes(fieldName) === true) inputType = "color";
+      if (fieldName === "Allgroups") inputType = "checkbox";
       layoutFields.append(CreateField(fieldName, fieldLabel, this.Draft[fieldName], inputType).Container);
     }
     scrollContent.append(layoutFields);
