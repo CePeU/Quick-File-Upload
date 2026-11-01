@@ -1,3 +1,4 @@
+import { LoadHelpContent, QFU_HELP_STATE } from "./help.js";
 import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS, QFU_GROUP_SETTINGS, QFU_RULE_SETTINGS, QFU_ACTION_SETTINGS, QFU_MENU_FIELDS, QFU_CLIP_RULE_SETTINGS } from "./settings.js";
 import { NormalizePath, ValidateSettings, ParseSettings, SerializeSettings } from "./core.js";
 import { ContentApplication, CreateElement, CreateButton, CreateField, CreateOrdering, AddSection } from "./ui.js";
@@ -15,35 +16,16 @@ export class HelpApplication extends ContentApplication {
 
   async _renderHTML() {
     let helpContent = CreateElement("article", "qu-help-content");
-    let helpIntro = game.i18n.localize("QFU.HelpIntro");
-    // let helpIntro = game.i18n.localize("Configure ordered groups of upload rules. Expand a topic below for details.");
-    helpContent.append(CreateElement("p", "qu-help-intro", helpIntro));
-    // Catalogue sections keep explanatory prose separate from rendering code.
-    let helpTopics = [
-      [game.i18n.localize("QFU.GroupsTitle"), game.i18n.localize("QFU.HelpGroups")],
-      // [game.i18n.localize("Groups and rules"), game.i18n.localize("Group identifiers must be unique. Rule names may repeat. Use the arrows to order groups and the rules within each group. Only group identifiers appear in the upload window's list. The folder panel lists active rule names and paths in evaluation order.")],
-      [game.i18n.localize("QFU.RoutingTitle"), game.i18n.localize("QFU.HelpRouting")],
-      // [game.i18n.localize("Routing and defaults"), game.i18n.localize("With All groups checked, every group and its rules are checked from top to bottom. The first qualifying rule wins. If no rule qualifies, the module fallback is used; group defaults are ignored. Uncheck All groups to run only the selected group. Its default rule receives unmatched files, or the module fallback is used if no group default exists. At most one rule per group may be marked default. Defaults ignore regex and size limits when used as fallbacks.")],
-      [game.i18n.localize("QFU.PatternsTitle"), game.i18n.localize("QFU.HelpPatterns")],
-      // [game.i18n.localize("Regex and file size"), game.i18n.localize("Each rule tests the filename regex first, then its maximum size. Use a plain pattern or /pattern/i for case-insensitive matching. A blank regex never matches, but its rule can be a group default. Maximum size is inclusive, in KB (1 KB = 1,024 bytes); 0 is unlimited. If a matching file is too large, evaluation continues to the next rule.")],
-      [game.i18n.localize("QFU.PathsTitle"), game.i18n.localize("QFU.HelpPaths")],
-      // [game.i18n.localize("Folders and permissions"), game.i18n.localize("Paths are relative to Foundry's user-data directory, such as uploads/images. Type a path or use Browse to select or create a folder. Missing upload folders are created when permissions allow. Folder creation in the picker is immediate and is not undone by Cancel. Upload, browse and folder creation permissions still apply. Only GMs can save settings.")],
-      [game.i18n.localize("QFU.ControlsTitle"), game.i18n.localize("QFU.HelpControls")],
-      // [game.i18n.localize("Scene controls"), game.i18n.localize("Main opens the upload window on every click without a submenu. Main control with submenu adds a top-level menu whose upload tool opens the window. Submenu adds the upload tool under the parent control ID, such as tokens, tiles or notes. An unavailable parent falls back to Main. Position 0 is first, -1 is last; larger positions append.")],
-      [game.i18n.localize("QFU.LayoutTitle"), game.i18n.localize("QFU.HelpLayout")],
-      // [game.i18n.localize("Window and appearance"), game.i18n.localize("Sizes accept pixels (720) or percentages (75%). Window percentages use the viewport; pad and header percentages use the application size. Header width follows pad width. The group list retains at least 20% width. Header and toggle retain at least two font units in height. Pixel sizes scale down on shrink. Reopen the upload window to apply initial dimensions. A blank pad name uses the translated default label.")],
-      [game.i18n.localize("QFU.TransferTitle"), game.i18n.localize("QFU.HelpTransfer")]
-      // [game.i18n.localize("JSON import and export"), game.i18n.localize("Export downloads the current valid editor contents, including unsaved edits, groups, rules and appearance. Import validates a JSON file and replaces only the editor draft. Review it and Save to apply it to the world, or Cancel to discard it. Invalid imports leave the draft unchanged. Only the current grouped settings schema is accepted. Files created or uploaded on the server are not part of the export.")]
-    ];
-    for (let [topicTitle, topicText] of helpTopics) {
+    let helpData = await LoadHelpContent();
+    if (helpData === null) return helpContent;
+    helpContent.append(CreateElement("p", "qu-help-intro", helpData.Intro));
+    for (let [topicIndex, topicEntry] of helpData.Topics.entries()) {
       let topicBlock = CreateElement("details", "qu-help-topic");
-      topicBlock.append(CreateElement("summary", "", topicTitle), CreateElement("p", "", topicText));
+      topicBlock.open = topicIndex === 0;
+      topicBlock.append(CreateElement("summary", "", topicEntry.Title));
+      for (let paragraphText of topicEntry.Paragraphs) topicBlock.append(CreateElement("p", "", paragraphText));
       helpContent.append(topicBlock);
     }
-    let exclusionText = game.i18n.localize("QFU.ExclusionHelp");
-    // let exclusionText = game.i18n.localize("Groups marked Skip when processing all groups are ignored entirely in All groups mode. They remain selectable and run normally when All groups is unchecked, including their group default.");
-    helpContent.querySelector("details").append(CreateElement("p", "", exclusionText));
-    helpContent.querySelector("details").open = true;
     return helpContent;
   }
 }
@@ -113,7 +95,8 @@ export class ConfigurationApplication extends ContentApplication {
     nameField.Input.required = true;
     let regexField = CreateField("Regex", game.i18n.localize("QFU.RegexLabel"), ruleData.Regex);
     // let regexField = CreateField("Regex", game.i18n.localize("Filename regex"), ruleData.Regex);
-    regexField.Input.placeholder = "/\\.(png|webp)$/i";
+    regexField.Input.placeholder = game.i18n.localize("QFU.RegexExample");
+    // regexField.Input.placeholder = game.i18n.localize("/\\.(png|webp)$/i or .* for all");
     let limitField = CreateField("Limit", game.i18n.localize("QFU.LimitLabel"), ruleData.Limit, "number");
     // let limitField = CreateField("Limit", game.i18n.localize("Max size (KB; 0 = unlimited)"), ruleData.Limit, "number");
     limitField.Input.min = "0";
@@ -407,10 +390,12 @@ export class ConfigurationApplication extends ContentApplication {
     importInput.type = "file";
     importInput.accept = ".json,application/json";
     importInput.hidden = true;
-    toolbarElement.append(CreateButton(helpLabel, () => new HelpApplication().render({ force: true })),
-      CreateButton(exportLabel, () => {
+    toolbarElement.append(CreateButton(exportLabel, () => {
         try { this.ExportSettings(); } catch (exportError) { this.ShowError(exportError); }
       }), CreateButton(importLabel, () => importInput.click()), importInput);
+    if (QFU_HELP_STATE.Content !== null) {
+      toolbarElement.append(CreateButton(helpLabel, () => new HelpApplication().render({ force: true })));
+    }
     importInput.addEventListener("change", async () => {
       let importFile = importInput.files[0];
       if (importFile === undefined || this.Pending === true) return;

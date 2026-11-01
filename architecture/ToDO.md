@@ -23,19 +23,27 @@ If you need more context you can look into History.md which will hold all histor
 - if the parameters of a function or method are less than 10 concrete values list them also in the comment and explain what they do
 - put settings in their own settings.js file if applicable and export them as a settings object into the code base with a settings object containing all settings with meaningfull settings names and their default values
 - name own code properties with a capital letter but do not use camel case for them and if possible restrict them to one word only
-- leave Foundry methods and functions and constants untouched by the naming convention rules 
+- leave Foundry methods and functions and constants untouched by the naming convention rules
 - passe die module.json versionsnummer an nachdem die changes oder bugs bearbeitet wurden nutze das schema "major.minor.patch". Erzeuge einen lokalen git commit mit aussagekräftiger commit Nachricht
 - Die CHANGELOG.md Datei ist im Verzeichnis docs zu finden
 
 
 # BUG
-Umgesetzt in Version 1.12.0 (2026-11-01): v13-kompatible Hauptschaltfläche mit wiederverwendbaren, modulunabhängigen Hilfsfunktionen in scripts/scene-controls.js.
-
-1) In der Foundry Version v13 funktioniert die Szenensteuerung nicht für die Hauptschaltfläche. Scheinbar gibt es dort einen Unterschied zwischen v13 und v14. Untermenüs funktioniert noch. Vermutlich müssen unterschiedliche vorgehensweisen je nachdem ob es v13 oder v14 ist implementiert werden. Die modularität der Lösung so dass das javascript für diese funktionalität auch in anderen Modulen verwendet werden kann soll aber beibehalten werden.
-
 
 # Change
 
-Umgesetzt in Version 1.12.0 (2026-11-01): Aktion „Manuell benamen“ mit Clipboard-Schema, gemeinsamem Basisnamen, optionaler Einzelbenennung und vollständigem Abbruch vor dem ersten Upload. Dokumentation: docs/index.md.
+Umgesetzt in Version 1.13.0 (2026-11-01): Punkte 1–5. Sprachabhängige Hilfe in help/en_help.json und help/de_help.json, aktualisierte Themen und geprüfte Regex-Beispiele, Hilfe zuletzt und klickbarer Dokumentationslink. Fehlende oder ungültige Hilfedateien blenden den Eintrag aus. Bei den Dateiendungsbeispielen wurde das @ als Alternativzeichen durch das korrekte | ersetzt.
 
-1) Füge eine weitere vordefinierte Aktion hinzu "Manual naming"/"Manuell benamen". Der Benutzer bekommt ein modal in das er in einem input Feld einen Namen eingeben kann das dann als Dateinamen zum speichern übernommen wird. Es gibt einen Button in dem modal um das Naming Schema des Clipboard importes in das input Feld zu übernehmen. Handelt es sich um einen mehrfach import dann wird nur der Standardname übernommen und die Regeln für die Namenserweiterung angewandt. Es gibt eine Checkbox in dem modal das angeklickt werden kann dass es erlaubt bei einem mehrfachimport jede einzelne Datei zu benamen. Es gibt einen OK button der dazu führt dass der Import gestartet wird. Es gibt einen Cancel Button der den import komplett abricht.
+1) Ändere die Beispielhaft angezeigte Regex Regel die in den Regeln derzeit angezeigt wird. Derzeit so /\.(png@webp)$/i sollte es so anzeigen "/\.(png@webp)$/i  oder .* für alle"
+
+2) Die upload quick file upload - Hilfe soll eine JSON sein die geladen wird und angezeigt wird wie bisher mit aufklappen und text. Ziel ist es die Datei updaten zu können ohne es hardkodieren zu müssen. Lege dafür einen eigenen Ordner an. Analog zu den Übersetzungs JSON dateien soll es dort eine en_help.json und eine de_help.json geben. Eine nutzung von i18 translation strings ist nicht notwendig. Das json soll entsprechend der verwendeten Sprache ausgewählt werden und beinhaltet die korrekten Texte. Ist kein JSON vorhanden dann gibt es diesen Menüpunkt nicht.
+
+3) Update die Quick File Upload - Hilfe so dass sie zur aktuelln Version passt. Gib dort beispiele für funktionierende Regex:
+Alle Dateinamen: .*
+Nur Dateiendung: /\.(png@webp)$/i
+Teil des Dateinamens: /monster/i
+vielleicht noch 2-3 weitere sinnvolle Beispiele
+
+4) Setze die Quick File Upload Hilfe als letzten Button im settings menü.
+
+5) Ändere den Tooltip text für Quick File Upload - Hilfe in "Beschreibung und Hilfen für Quick File Upload siehe auch https://cepeu.github.io/Quick-File-Upload/" dabei sollte der link clickbar sein und "Github Dokumentation" heißen.

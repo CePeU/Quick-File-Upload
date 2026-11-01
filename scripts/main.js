@@ -1,3 +1,4 @@
+import { LoadHelpContent, DecorateHelpMenu } from "./help.js";
 import { RegisterActionControl, BindActionControl } from "./scene-controls.js";
 import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS } from "./settings.js";
 import { ResolveDimension } from "./core.js";
@@ -49,11 +50,6 @@ Hooks.once("init", () => {
     // name: "Quick File Upload", label: "Quick File Upload Configuration", hint: "Manage ordered groups, routing rules, appearance, and JSON import/export.",
     icon: "fa-solid fa-cloud-arrow-up", type: ConfigurationApplication, restricted: true
   });
-  game.settings.registerMenu(QFU_MODULE_ID, "help", {
-    name: "QFU.HelpTitle", label: "QFU.HelpButton", hint: "QFU.HelpIntro",
-    // name: "Quick File Upload — Help", label: "Settings help", hint: "Configure ordered groups of upload rules. Expand a topic below for details.",
-    icon: "fa-solid fa-circle-question", type: HelpApplication, restricted: false
-  });
   game.settings.registerMenu(QFU_MODULE_ID, "controls", {
     name: "QFU.ControlsTitle", label: "QFU.ControlsTitle", icon: "fa-solid fa-bars", type: ControlsApplication, restricted: true
     // name: "Scene controls", label: "Scene controls", icon: "fa-solid fa-bars", type: ControlsApplication, restricted: true
@@ -73,6 +69,18 @@ Hooks.once("init", () => {
   game.modules.get(QFU_MODULE_ID).api = { Upload: OpenUpload, Settings: OpenSettings };
 });
 
+// Read the client language after Foundry initializes localization. Loading at
+// init would use the server's default language before client settings apply.
+Hooks.once("i18nInit", async () => {
+  if (await LoadHelpContent() !== null) {
+    game.settings.registerMenu(QFU_MODULE_ID, "help", {
+      name: "QFU.HelpTitle", label: "QFU.HelpButton", hint: "QFU.HelpHint",
+      // name: "Quick File Upload — Help", label: "Settings help", hint: "Description and help for Quick File Upload. See also",
+      icon: "fa-solid fa-circle-question", type: HelpApplication, restricted: false
+    });
+  }
+});
+
 Hooks.on("getSceneControlButtons", controlRecord => {
   if (CanUpload() === false) return;
   let moduleSettings = ReadSettings();
@@ -87,3 +95,5 @@ Hooks.on("renderSceneControls", controlApplication => {
   if (ReadSettings().Placement === "main-sub") return;
   BindActionControl(controlApplication.element, QFU_MODULE_ID, OpenUpload);
 });
+
+Hooks.on("renderSettingsConfig", settingsApplication => DecorateHelpMenu(settingsApplication.element));

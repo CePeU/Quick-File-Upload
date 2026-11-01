@@ -1,0 +1,81 @@
+{
+  "Intro": "Quick File Upload 1.13.0: drop local files, click the cloud to browse, or import images and text from the clipboard. Expand a topic for settings and examples.",
+  "Topics": [
+    {
+      "Title": "Groups and rules",
+      "Paragraphs": [
+        "Group identifiers must be unique; rule names may repeat. Use arrows to reorder groups and rules. Clone copies the current unsaved values below the source; cloned rules do not become an additional group default. Group colors can highlight the overview.",
+        "The upload window lists group identifiers. The folder panel shows active rule names and target paths in evaluation order. Groups marked Skip when processing all groups are ignored entirely in All groups mode but remain selectable individually."
+      ]
+    },
+    {
+      "Title": "Routing, defaults and blank regexes",
+      "Paragraphs": [
+        "With All groups checked, groups and rules are checked from top to bottom. The first qualifying rule wins. Unmatched files use the module fallback; group defaults are ignored. With All groups unchecked, only the selected group is checked. Unmatched files use its default rule or the module fallback. At most one rule per group may be the default.",
+        "An ordinary rule with a blank regex never matches directly. It can still be a group default, which ignores regex and size limits when used as a fallback. Use .* to match every filename. A clipboard-only rule with a blank regex accepts every clipboard import, subject to its size limit."
+      ]
+    },
+    {
+      "Title": "Working regex examples and file size",
+      "Paragraphs": [
+        "All filenames: .*",
+        "PNG or WebP extension: /\\.(png|webp)$/i — matches map.PNG and portrait.webp. The | character separates alternatives.",
+        "Part of a filename: /monster/i — matches cave-monster.png regardless of case.",
+        "Filename prefix: /^token[-_]/i — matches token-orc.png and TOKEN_goblin.webp.",
+        "Audio extensions: /\\.(ogg|mp3|wav)$/i — matches music.ogg or ambience.WAV.",
+        "Numbered map names: /^map-\\d+\\.(png|webp)$/i — matches map-12.png, but not old-map-12.png.",
+        "Enter a plain pattern or /pattern/flags. Rules test the original filename first, then size. Limits are inclusive in KB (1 KB = 1,024 bytes); 0 means unlimited. If a matching file exceeds the limit, the next rule is checked. Naming and image conversion occur after routing."
+      ]
+    },
+    {
+      "Title": "Folders and permissions",
+      "Paragraphs": [
+        "Use folders relative to Foundry's user-data directory, such as uploads/images. Browse selects or creates a folder; missing upload folders are created when permitted. Creating folders in the picker takes effect immediately and is not undone by Cancel.",
+        "Uploading requires file-upload permission. Only GMs can save settings. The Foundry file browser button opens the configured fallback folder."
+      ]
+    },
+    {
+      "Title": "Scene controls",
+      "Paragraphs": [
+        "Main opens the uploader on every click without selecting a submenu. Main control with submenu creates a dedicated menu with an upload tool. Submenu inserts the tool under a parent ID such as tokens, tiles or notes. A missing parent falls back to Main. Position 0 is first, -1 last; larger positions append. Main controls support Foundry v13 and v14."
+      ]
+    },
+    {
+      "Title": "Window, appearance and clipboard access",
+      "Paragraphs": [
+        "Dimensions accept pixels or percentages. Window percentages use the browser viewport; panel percentages use the application. The pad is above paths on the left, while All groups is above the group list on the right. Pad width leaves at least 20% for groups; pad height is capped at 80%. Header height defines the minimum top-row height. Reopen the uploader to apply initial dimensions.",
+        "Click the cloud to select local files. Click the pad text to focus it for Ctrl+V, or use the clipboard import button. The Clipboard setting also allows paste elsewhere in the upload window, excluding editable fields. If browser clipboard access fails, focus the pad and press Ctrl+V. HTML and plain text become files; Markdown remains literal text. Configure labels, colors and the initial All groups state under Window and appearance."
+      ]
+    },
+    {
+      "Title": "Clipboard Import and filename builder",
+      "Paragraphs": [
+        "Clipboard-only rules apply only to clipboard imports and take priority over ordinary rules in the active groups. A blank clipboard-rule path inherits the clipboard folder. Prefer clipboard defaults skips ordinary rules, while explicit clipboard rules retain priority. Set PNG, WebP or JPG as the default image format; clipboard-only rules can override it. Images are actually converted before upload; JPEG transparency becomes white.",
+        "The naming editor has a base name and ordered extension tokens. Drag presets into the name, reorder them, double-click to edit, or use the add and delete buttons. Tokens support separators, date/time (YYYY, YY, MMM, MM, DD, HH, mm, ss), epoch seconds, random decimal digits, SHA-256 and the routed group name. Example: clipboard-image + _ + YYYY-MM-DD + _ + four random digits gives clipboard-image_2026-11-01_1234.png. A blank result uses clipboard_<epoch seconds>.",
+        "The Clipboard Import rule action processes a local file with clipboard defaults before uploading it once. Explicit clipboard rules can determine its destination and action. Source filenames and sizes determine routing; generated names are applied afterward."
+      ]
+    },
+    {
+      "Title": "Manual naming",
+      "Paragraphs": [
+        "Select Manual naming as a rule action to enter a filename without its extension before upload. Use clipboard naming scheme copies the full configured name for a single file. The actual file extension is retained, including any clipboard image conversion.",
+        "For multiple files, the dialog accepts a shared base. The clipboard shortcut copies only the base, and configured extension tokens are generated for each file. Enable Name each file separately and confirm to enter an exact stem for each matching file. Separate names do not automatically gain batch tokens; the clipboard shortcut remains available. Duplicate manual names in the same batch folder receive numbered suffixes.",
+        "All naming dialogs finish before the first upload. Cancel or closing any naming dialog aborts the entire import, including files matched by other rules. Invalid filename characters are removed. Routing still uses the source filename."
+      ]
+    },
+    {
+      "Title": "Upload actions, macros and recipients",
+      "Paragraphs": [
+        "Rules can post an image to chat, show it to players, create journal image or text pages, or ask for an action after upload. Image actions require an image. Optional macros run before or after the built-in action, always after the server confirms storage. Macro scope contains file, path and rule. Clipboard Import and Manual naming perform their processing before storage.",
+        "Journal destinations can be selected by UUID or name regex. Only editable journals are offered; explicit UUIDs preserve order unless alphabetical sorting is enabled. Recipient modes include all users, players only, journal Observers/Owners, selected users and a permission chooser. Observer mode requires a reference journal. Canceling an action chooser skips that action; a subsequent macro still runs."
+      ]
+    },
+    {
+      "Title": "JSON import/export and maintaining this help",
+      "Paragraphs": [
+        "Export downloads the full valid settings draft, including unsaved edits from the open menu. Import validates and stages JSON. Saving applies only fields belonging to the open menu; import in other menus to apply their settings. Cancel discards draft changes. Invalid imports leave the draft unchanged; server files are not exported.",
+        "Help is stored separately in help/en_help.json and help/de_help.json. Each file contains Intro and Topics, with Title and Paragraphs for each topic. Text is displayed literally, without HTML or translation keys. Edit the JSON to update this help; reopening reloads the file. The active language chooses the file. If it is absent or invalid at startup, the help menu is omitted."
+      ]
+    }
+  ]
+}

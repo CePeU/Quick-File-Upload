@@ -60,8 +60,19 @@ let { OpenUpload } = await import("../scripts/main.js");
 let { UploadApplication } = await import("../scripts/upload.js");
 let { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication, ClipboardApplication, JournalListApplication } = await import("../scripts/configuration.js");
 let { ReadSettings } = await import("../scripts/storage.js");
+let { LoadHelpContent, QFU_HELP_STATE } = await import("../scripts/help.js");
+
+async function FetchHelpFixture(requestPath) {
+  try {
+    let languageFile = requestPath.split("/").at(-1);
+    return { ok: true, json: async () => JSON.parse(readFileSync(new URL(`../help/${languageFile}`, import.meta.url), "utf8")) };
+  } catch { return { ok: false }; }
+}
+
 
 beforeEach(() => {
+  globalThis.fetch = FetchHelpFixture;
+  game.i18n.lang = "en";
   currentSettings = CreateSettings();
   worldValues.clear(); writtenSettings.length = 0; notificationMessages.length = 0;
   uploadAllowed = true; game.user.isGM = true;
@@ -116,10 +127,11 @@ test("clipboard paste routes HTML, literal Markdown and images with focus restri
   assert.equal(batches.length, 4);
 });
 
-test("manifest namespace, ApplicationV2 settings, help menu and API agree", () => {
+test("manifest namespace, ApplicationV2 settings, help menu and API agree", async () => {
   let moduleManifest = JSON.parse(readFileSync(new URL("../module.json", import.meta.url), "utf8"));
   assert.equal(moduleManifest.id, QFU_MODULE_ID);
-  hookHandlers.get("init")();
+  await hookHandlers.get("init")();
+  await hookHandlers.get("i18nInit")();
   assert.equal(registeredSettings.get(QFU_SETTINGS_KEY).scope, "world");
   assert.equal(registeredMenus.get("configure").type, ConfigurationApplication);
   assert.equal(registeredMenus.get("configure").restricted, true);
@@ -160,7 +172,8 @@ test("separate menus show only their fields and preserve concurrent settings", a
 });
 
 test("theme rule color pickers save, export and update already open editors", async () => {
-  hookHandlers.get("init")();
+  await hookHandlers.get("init")();
+  await hookHandlers.get("i18nInit")();
   let groupsWindow = await new ConfigurationApplication().render();
   let layoutWindow = await new LayoutApplication().render();
   for (let fieldName of ["Rulelight", "Ruledark"]) {
@@ -487,10 +500,78 @@ test("user-controlled names are rendered as text rather than HTML", async () => 
 
 test("help renders structured expandable topics and the agreed fallback behavior", async () => {
   let helpWindow = await new HelpApplication().render();
-  assert.equal(helpWindow.element.querySelectorAll("details").length, 7);
+  assert.equal(helpWindow.element.querySelectorAll("details").length, 10);
   assert.equal(helpWindow.element.querySelector("details").open, true);
   assert.match(helpWindow.element.textContent, /group defaults are ignored/);
   assert.match(helpWindow.element.textContent, /1,024 bytes/);
+});
+
+test("language JSON determines help contents, including fresh changes and working regex examples", async () => {
+  game.i18n.lang = "de-DE";
+  let helpWindow = await new HelpApplication().render();
+  assert.match(helpWindow.element.textContent, /Manuell benamen/);
+  assert.match(helpWindow.element.textContent, /Alle Dateinamen: \.\*/);
+  assert.match(helpWindow.element.textContent, /png\|webp/);
+  assert.equal(helpWindow.element.querySelectorAll("details").length, 10);
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ Intro: "Updated <script>text</script>", Topics: [
+    { Title: "New topic", Paragraphs: ["New help without changing JavaScript"] }
+  ] }) });
+  await helpWindow.render();
+  assert.match(helpWindow.element.textContent, /New help without changing JavaScript/);
+  assert.equal(helpWindow.element.querySelector("script"), null);
+  assert.equal(helpWindow.element.querySelectorAll("details").length, 1);
+  assert.equal(helpWindow.element.querySelector("details").open, true);
+  // Test the shipped examples against filenames, rather than only their text.
+  for (let language of ["en", "de"]) {
+    let helpData = JSON.parse(readFileSync(new URL(`../help/${language}_help.json`, import.meta.url), "utf8"));
+    let examples = helpData.Topics[2].Paragraphs.slice(0, 6);
+    let matchingNames = ["any.file", "map.PNG", "cave-monster.png", "TOKEN_orc.webp", "ambience.WAV", "map-12.png"];
+    for (let [index, paragraph] of examples.entries()) {
+      let pattern = paragraph.match(/: (\/.*?\/[a-z]*|\.\*)/)[1];
+      let literal = pattern.match(/^\/(.*)\/([a-z]*)$/);
+      let regex = literal === null ? new RegExp(pattern) : new RegExp(literal[1], literal[2]);
+      assert.equal(regex.test(matchingNames[index]), true, paragraph);
+      if (index > 0) assert.equal(regex.test("unrelated.txt"), false, paragraph);
+    }
+  }
+});
+
+test("missing or invalid help omits menu and editor button; available help is last", async () => {
+  for (let failureMode of ["missing", "invalid", "network"]) {
+    globalThis.fetch = async () => {
+      if (failureMode === "network") throw new Error("Offline");
+      return { ok: failureMode !== "missing", json: async () => ({ Intro: "bad", Topics: [{}] }) };
+    };
+    registeredMenus.clear();
+    await hookHandlers.get("init")();
+  await hookHandlers.get("i18nInit")();
+    assert.equal(registeredMenus.has("help"), false);
+    assert.equal(QFU_HELP_STATE.Content, null);
+    let editor = await new ConfigurationApplication().render();
+    assert.equal(Array.from(editor.Form.querySelectorAll(".qu-toolbar button")).some(button => button.textContent === LocalizeText("QFU.HelpButton")), false);
+  }
+  globalThis.fetch = FetchHelpFixture;
+  registeredMenus.clear();
+  await hookHandlers.get("init")();
+  await hookHandlers.get("i18nInit")();
+  assert.equal(Array.from(registeredMenus.keys()).at(-1), "help");
+  let editor = await new ConfigurationApplication().render();
+  assert.equal(editor.Form.querySelector(".qu-toolbar button:last-child").textContent, LocalizeText("QFU.HelpButton"));
+  assert.match(editor.Form.querySelector('[name="Regex"]').placeholder, /or \.\* for all/);
+  game.i18n.lang = "fr";
+  assert.equal(await LoadHelpContent(), null);
+});
+
+test("help menu hint contains a clickable documentation link and is safe to render repeatedly", () => {
+  let settingsElement = document.createElement("section");
+  settingsElement.innerHTML = '<div class="form-group"><button data-key="quick-file-upload.help"></button><p class="hint">Old hint</p></div>';
+  hookHandlers.get("renderSettingsConfig")({ element: settingsElement });
+  hookHandlers.get("renderSettingsConfig")({ element: settingsElement });
+  let links = settingsElement.querySelectorAll(".hint a");
+  assert.equal(links.length, 1);
+  assert.equal(links[0].href, "https://cepeu.github.io/Quick-File-Upload/");
+  assert.equal(links[0].textContent, "Github documentation");
+  assert.match(settingsElement.textContent, /Description and help for Quick File Upload/);
 });
 
 test("group exclusion persists through editor save and JSON import", async () => {

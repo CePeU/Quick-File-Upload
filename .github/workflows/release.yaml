@@ -26,12 +26,14 @@ jobs:
           mkdir quick-file-upload/scripts
           mkdir quick-file-upload/styles
           mkdir quick-file-upload/lang
+          mkdir quick-file-upload/help
           cp README.md ./quick-file-upload/
           cp ./docs/CHANGELOG.md ./quick-file-upload/
           cp module.json ./quick-file-upload/
           cp ./styles/*.css ./quick-file-upload/styles/
           cp ./scripts/*.js ./quick-file-upload/scripts/
           cp ./lang/*.* ./quick-file-upload/lang/
+          cp ./help/*.json ./quick-file-upload/help/
           zip -r quick-file-upload.zip quick-file-upload
 
       - name: Create release

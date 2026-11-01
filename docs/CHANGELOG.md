@@ -1,3 +1,11 @@
+## [1.13.0] / 2026-11-01
+### Changed
+- Help topics now load from language-specific `help/en_help.json` and `help/de_help.json`, selected after client localization initializes. Missing or invalid help omits the help menu and editor button.
+- Help covers current routing, clipboard imports, filename building, manual naming, actions and settings, including six working regex examples.
+- The rule regex placeholder now includes `.*` for all filenames.
+- Help is the last module settings entry and last editor toolbar button, with a clickable Github documentation link in its settings hint.
+- Release archives now include the help JSON files. Help text reloads on opening without browser caching.
+
 ## [1.12.0] / 2026-11-01
 ### Added
 - Manual naming rule action with a modal filename input, clipboard naming shortcut, shared batch bases and optional separate names for each file.

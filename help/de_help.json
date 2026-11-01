@@ -1,0 +1,81 @@
+{
+  "Intro": "Quick File Upload 1.13.0: Lokale Dateien ablegen, über die Wolke auswählen oder Bilder und Text aus der Zwischenablage importieren. Klappe ein Thema für Einstellungen und Beispiele auf.",
+  "Topics": [
+    {
+      "Title": "Gruppen und Regeln",
+      "Paragraphs": [
+        "Gruppenkennungen müssen eindeutig sein; Regelnamen dürfen mehrfach vorkommen. Mit den Pfeilen ordnest du Gruppen und Regeln. Klonen kopiert die aktuellen, auch ungespeicherten Werte unter den Ursprungseintrag. Eine geklonte Regel wird kein zusätzlicher Gruppenstandard. Gruppenfarben können die Übersicht hervorheben.",
+        "Das Uploadfenster zeigt Gruppenkennungen. Das Ordnerfeld zeigt aktive Regelnamen und Zielpfade in Prüfungsreihenfolge. Bei Alle Gruppen überspringen schließt eine Gruppe vollständig aus diesem Modus aus; einzeln bleibt sie auswählbar."
+      ]
+    },
+    {
+      "Title": "Routing, Standards und leere Regex-Felder",
+      "Paragraphs": [
+        "Bei aktiviertem Alle Gruppen werden Gruppen und Regeln von oben nach unten geprüft. Die erste passende Regel gewinnt. Nicht zugeordnete Dateien verwenden den Modulstandard; Gruppenstandards werden ignoriert. Bei deaktiviertem Alle Gruppen wird nur die ausgewählte Gruppe geprüft. Nicht zugeordnete Dateien verwenden deren Standardregel oder den Modulstandard. Pro Gruppe ist höchstens eine Standardregel erlaubt.",
+        "Eine normale Regel mit leerem Regex-Feld trifft nicht direkt zu. Sie kann als Gruppenstandard dienen; als Auffangregel ignoriert sie Regex und Größenlimit. Verwende .* für alle Dateinamen. Bei einer Clipboard-only-Regel akzeptiert ein leeres Regex-Feld jeden Clipboard-Import, sofern das Größenlimit eingehalten wird."
+      ]
+    },
+    {
+      "Title": "Funktionierende Regex-Beispiele und Dateigröße",
+      "Paragraphs": [
+        "Alle Dateinamen: .*",
+        "Dateiendung PNG oder WebP: /\\.(png|webp)$/i — erkennt map.PNG und portrait.webp. Das Zeichen | trennt Alternativen.",
+        "Teil des Dateinamens: /monster/i — erkennt cave-monster.png unabhängig von Groß- und Kleinschreibung.",
+        "Anfang des Dateinamens: /^token[-_]/i — erkennt token-orc.png und TOKEN_goblin.webp.",
+        "Audiodateien: /\\.(ogg|mp3|wav)$/i — erkennt music.ogg und ambience.WAV.",
+        "Nummerierte Kartennamen: /^map-\\d+\\.(png|webp)$/i — erkennt map-12.png, aber nicht old-map-12.png.",
+        "Trage ein einfaches Muster oder /muster/flags ein. Regeln prüfen zuerst den ursprünglichen Dateinamen, dann die Größe. Grenzen gelten einschließlich des Grenzwerts in KB (1 KB = 1.024 Bytes); 0 bedeutet unbegrenzt. Ist eine passende Datei zu groß, wird die nächste Regel geprüft. Benennung und Bildkonvertierung erfolgen nach der Zuordnung."
+      ]
+    },
+    {
+      "Title": "Ordner und Berechtigungen",
+      "Paragraphs": [
+        "Verwende Pfade relativ zu Foundrys Benutzerdatenverzeichnis, etwa uploads/images. Durchsuchen wählt oder erstellt einen Ordner; fehlende Uploadordner werden bei ausreichenden Berechtigungen erstellt. Ordnererstellung im Auswahldialog erfolgt sofort und wird durch Abbrechen nicht rückgängig gemacht.",
+        "Uploads benötigen die Datei-Upload-Berechtigung. Nur Spielleitungen dürfen Einstellungen speichern. Die Schaltfläche für den Foundry-Dateibrowser öffnet den konfigurierten Standardordner."
+      ]
+    },
+    {
+      "Title": "Szenensteuerung",
+      "Paragraphs": [
+        "Hauptschaltfläche öffnet das Uploadfenster bei jedem Klick ohne Untermenüauswahl. Hauptschaltfläche mit Untermenü erzeugt ein eigenes Menü mit Uploadwerkzeug. Untermenü fügt das Werkzeug unter einer übergeordneten ID wie tokens, tiles oder notes ein. Fehlt diese, wird die Hauptschaltfläche verwendet. Position 0 ist zuerst, -1 zuletzt; größere Positionen hängen den Eintrag an. Die Hauptschaltfläche unterstützt Foundry v13 und v14."
+      ]
+    },
+    {
+      "Title": "Fenster, Darstellung und Zwischenablagezugriff",
+      "Paragraphs": [
+        "Größen akzeptieren Pixel oder Prozent. Fensterprozente beziehen sich auf den Browserbereich; Bereichsprozente auf die Anwendung. Links liegt das Pad über den Pfaden, rechts Alle Gruppen über der Gruppenliste. Die Padbreite lässt mindestens 20 % für Gruppen; die Padhöhe ist auf 80 % begrenzt. Die Kopfzeilenhöhe definiert das Minimum der oberen Zeile. Öffne das Uploadfenster erneut, um geänderte Anfangsmaße anzuwenden.",
+        "Klicke die Wolke zur lokalen Dateiauswahl. Klicke den Padtext zum Fokussieren für Strg+V oder verwende den Clipboard-Import-Button. Die Zwischenablage-Option erlaubt Einfügen auch außerhalb des Pads im Uploadfenster, ausgenommen Eingabefelder. Scheitert der Browserzugriff, fokussiere das Pad und drücke Strg+V. HTML und Klartext werden Dateien; Markdown bleibt wörtlicher Text. Beschriftungen, Farben und den anfänglichen Alle-Gruppen-Zustand konfigurierst du unter Fenster und Darstellung."
+      ]
+    },
+    {
+      "Title": "Clipboard Import und Namensschema",
+      "Paragraphs": [
+        "Clipboard-only-Regeln greifen nur bei Clipboard-Importen und haben innerhalb der aktiven Gruppen Vorrang vor normalen Regeln. Ein leerer Zielpfad erbt den Clipboard-Ordner. Clipboard-Standards bevorzugen überspringt normale Regeln; explizite Clipboard-Regeln behalten Vorrang. PNG, WebP oder JPG dienen als Standardbildformat; Clipboard-only-Regeln können es überschreiben. Bilder werden vor dem Upload tatsächlich konvertiert; Transparenz wird bei JPEG weiß.",
+        "Der Namenseditor enthält einen Basisnamen und geordnete Erweiterungseinträge. Ziehe Vorlagen in das Schema, ändere ihre Reihenfolge, bearbeite sie per Doppelklick oder verwende die Hinzufügen- und Löschen-Schaltflächen. Einträge unterstützen Trennzeichen, Datum/Zeit (YYYY, YY, MMM, MM, DD, HH, mm, ss), Sekunden seit 1970, zufällige Dezimalziffern, SHA-256 und den zugeordneten Gruppennamen. Beispiel: clipboard-image + _ + YYYY-MM-DD + _ + vier Zufallsziffern ergibt clipboard-image_2026-11-01_1234.png. Ein leeres Ergebnis verwendet clipboard_<Sekunden seit 1970>.",
+        "Die Regelaktion Clipboard Import verarbeitet eine lokale Datei mit den Clipboard-Standards vor einem einmaligen Upload. Explizite Clipboard-Regeln können Ziel und Aktion bestimmen. Dateiname und Größe der Quelldatei bestimmen die Zuordnung; erzeugte Namen werden anschließend angewandt."
+      ]
+    },
+    {
+      "Title": "Manuell benamen",
+      "Paragraphs": [
+        "Wähle Manuell benamen als Regelaktion, um vor dem Upload einen Dateinamen ohne Dateiendung einzugeben. Benennungsschema des Clipboard-Imports übernehmen kopiert für eine einzelne Datei den vollständigen konfigurierten Namen. Die tatsächliche Dateiendung bleibt erhalten, auch nach einer Clipboard-Bildkonvertierung.",
+        "Bei mehreren Dateien nimmt der Dialog einen gemeinsamen Basisnamen an. Die Clipboard-Schaltfläche kopiert nur den Basisnamen; konfigurierte Namenserweiterungen werden für jede Datei erzeugt. Aktiviere Jede Datei einzeln benamen und bestätige, um für jede passende Datei einen exakten Namen einzugeben. Einzelne Namen erhalten nicht automatisch die Erweiterungseinträge des Mehrfachimports; die Clipboard-Schaltfläche bleibt verfügbar. Doppelte manuelle Namen im selben Zielordner eines Imports erhalten nummerierte Zusätze.",
+        "Alle Namensdialoge werden vor dem ersten Upload abgeschlossen. Abbrechen oder Schließen eines Namensdialogs bricht den gesamten Import ab, einschließlich Dateien anderer Regeln. Ungültige Dateinamenzeichen werden entfernt. Die Zuordnung verwendet weiterhin den Quelldateinamen."
+      ]
+    },
+    {
+      "Title": "Uploadaktionen, Makros und Empfänger",
+      "Paragraphs": [
+        "Regeln können Bilder im Chat posten, Spielern anzeigen, Journal-Bild- oder Textseiten erstellen oder nach dem Upload eine Aktion abfragen. Bildaktionen benötigen ein Bild. Optionale Makros laufen vor oder nach der vordefinierten Aktion, immer erst nach bestätigter Speicherung auf dem Server. Der Makroaufruf erhält file, path und rule. Clipboard Import und Manuell benamen führen ihre Verarbeitung vor der Speicherung aus.",
+        "Journalziele können per UUID oder Namensregex ausgewählt werden. Nur bearbeitbare Journale werden angeboten; explizite UUIDs behalten ihre Reihenfolge, sofern die alphabetische Sortierung deaktiviert ist. Empfängermodi umfassen alle Benutzer, nur Spieler, Journal-Observer und -Owner, ausgewählte Benutzer sowie eine Berechtigungsauswahl. Observer benötigt ein Referenzjournal. Abbrechen einer Aktionsauswahl überspringt diese Aktion; ein nachfolgendes Makro läuft weiterhin."
+      ]
+    },
+    {
+      "Title": "JSON-Import/Export und Pflege dieser Hilfe",
+      "Paragraphs": [
+        "Export lädt den vollständigen gültigen Einstellungsentwurf herunter, einschließlich ungespeicherter Änderungen des geöffneten Menüs. Import prüft JSON und lädt es in den Entwurf. Speichern übernimmt nur Felder des geöffneten Menüs; importiere für andere Bereiche in deren Menüs. Abbrechen verwirft Entwurfsänderungen. Ungültige Importe lassen den Entwurf unverändert; Serverdateien werden nicht exportiert.",
+        "Die Hilfe liegt separat in help/en_help.json und help/de_help.json. Jede Datei enthält Intro und Topics, mit Title und Paragraphs pro Thema. Texte werden wörtlich angezeigt, ohne HTML oder Übersetzungsschlüssel. Bearbeite das JSON zum Aktualisieren; erneutes Öffnen lädt die Datei neu. Die aktive Sprache wählt die Datei. Fehlt sie beim Start oder ist sie ungültig, entfällt der Hilfemenüpunkt."
+      ]
+    }
+  ]
+}

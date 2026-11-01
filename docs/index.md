@@ -38,3 +38,11 @@ Enable **Name each file separately** and confirm the batch dialog to enter the e
 All naming dialogs finish before the first upload. **Cancel** or closing any naming dialog cancels the entire import. Invalid filename characters are removed; actual file extensions, clipboard image conversion and optional rule macros remain supported.
 
 The main scene-control button supports Foundry v13 and v14. Reusable control registration, ordering and click binding are exported from `scripts/scene-controls.js`; callers supply identifiers, labels, placement, generation and their own application-opening callback.
+
+## Editing the in-app help
+
+Version 1.13.0 loads help from `help/en_help.json` or `help/de_help.json` according to the client's language. Locale variants such as `de-DE` use the base language. A missing, invalid or unavailable file omits the help entry at startup; there is no automatic English fallback. The help button appears last in the module settings and editor toolbar.
+
+Each JSON file contains an `Intro` string and a `Topics` array. Each topic has a `Title` string and a `Paragraphs` array of strings. The first topic starts expanded; all topics can be collapsed. Text is displayed literally. Reopen the help window to load edited JSON without changing JavaScript. Reload Foundry after adding a file for a previously unavailable language.
+
+Regex examples include `.*` for all filenames, `/\.(png|webp)$/i` for image extensions, `/monster/i` for part of a name, `/^token[-_]/i` for a prefix, `/\.(ogg|mp3|wav)$/i` for audio and `/^map-\d+\.(png|webp)$/i` for numbered maps. Ordinary blank regex fields still do not match directly; blank clipboard-only regex fields match every clipboard import subject to size limits.
