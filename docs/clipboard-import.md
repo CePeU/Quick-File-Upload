@@ -39,38 +39,3 @@ Dates use the importing browser's local time. `MMM` uses the active language. Th
 For example, base `clipboard-image`, then `_`, `YYYY`, `_`, `MM`, `_`, and a four-digit random token produces `clipboard-image_2024_10_1234.png`. An empty resulting name becomes `clipboard_<seconds since 1970>`. Invalid filename/path characters are removed. The default naming pattern uses `clipboard-image_<timestamp>_<4 random digits>`.
 
 All clipboard defaults, token definitions and per-rule options participate in JSON export/import. Older configurations receive the new defaults automatically. Import and save the Clipboard Import menu to apply its fields; the groups menu saves rule options separately.
-
-## Reuse the naming library
-
-`scripts/name-builder.js` has no Foundry or DOM dependency. Import `GenerateFileName(settings, context)` directly to obtain a filename stem, or bind your own storage with `CreateNameService`:
-
-```js
-import { CreateNameService } from "./scripts/name-builder.js";
-
-const naming = CreateNameService({
-  Location: "my-app/filename-settings",
-  Read: key => JSON.parse(localStorage.getItem(key)),
-  Write: (key, settings) => localStorage.setItem(key, JSON.stringify(settings))
-});
-
-await naming.SaveSettings({
-  Base: "clipboard-image",
-  Parts: [
-    { Type: "separator", Value: "_" },
-    { Type: "date", Value: "YYYY-MM-DD" },
-    { Type: "separator", Value: "_" },
-    { Type: "random", Value: "4" }
-  ],
-  Presets: []
-});
-
-const filename = await naming.GenerateName({
-  Date: new Date(), Group: "Images", Content: fileBlob, Locale: "en"
-});
-```
-
-Read and Write may be synchronous or asynchronous. GenerateName reads the current configuration each time; SaveSettings validates and copies before writing. Context is optional. The library supplies SHA-256 even in HTTP browser contexts without SubtleCrypto. It returns the name without its file extension.
-
-## Development checks
-
-Run `npm.cmd test` and `npm.cmd run check` on Windows. `node testing/run-clipboard-browser.mjs` additionally checks real image codecs in an isolated headless Edge profile; pass a Chromium executable path as its first argument for another installation. This covers PNG/WebP/JPG conversions, byte signatures, decoding, JPEG transparency, the Image.decode fallback and upload-pipeline format overrides. Live interaction with Foundry remains a manual check.
