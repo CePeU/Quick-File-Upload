@@ -1,6 +1,15 @@
 ![GitHub Downloads (latest release)](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/latest/total)
 
+![Total Module downloads](https://img.shields.io/github/downloads-asset/CePeU/Quick-File-Uploads/quick-file-uploads.zip)
+
+
 # Quick File Upload
+
+## To Install
+Copy this link and paste it manually into your module installation input field called   
+"Manifest URL" at the bottom of the Foundry install module dialog.
+
+https://github.com/CePeU/Quick-File-Upload/releases/latest/download/module.json
 
 ## What it does
 
