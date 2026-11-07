@@ -1,6 +1,6 @@
-![Total Module Downloads (All Versions)](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/quick-file-uploads.zip?label=Total%20Module%20Downloads&color=blue&displayAssetName=false)
+![Total Module Downloads (All Versions)](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/quick-file-upload.zip?label=Total%20Module%20Downloads&color=blue&displayAssetName=false)
 
-![Latest Module Downloads](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/latest/quick-file-uploads.zip?displayAssetName=false&label=Latest%20Module%20Downloads&color=green)
+![Latest Module Downloads](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/latest/quick-file-upload.zip?displayAssetName=false&label=Latest%20Module%20Downloads&color=green)
 
 
 # Quick File Upload
