@@ -1,3 +1,14 @@
+---
+title: "Changelog"
+description: "Quick File Upload release history."
+tags:
+  - documentation
+---
+
+# Changelog
+
+[[index|Documentation home]] · [[settings-transfer|Configuration backups]]
+
 ## [1.14.1] / 2026-11-07
 ### Fixed
 - Show to players opens the selected image for the sender as well as sharing it with players, without posting to chat. No duplicate local window is opened when the sender is already a recipient, and empty audiences never broadcast.

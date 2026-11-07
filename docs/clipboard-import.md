@@ -1,41 +1,72 @@
 ---
-title: Clipboard Import
+title: "Clipboard imports"
+description: "Chapter 6: clipboard access, conversion, and routing priority."
+tags:
+  - documentation
 ---
 
-# Clipboard Import
+# Clipboard imports
 
-Open **Configure Settings → Quick File Upload → Clipboard Import** to configure:
+## Import clipboard content
 
-- **Clipboard image format**: PNG (default), WebP or JPG. The module detects PNG/JPEG/WebP signatures, decodes other supported image types in the browser, and converts the image bytes when necessary. JPG uses a white background for transparency. Unsupported or corrupt images fail individually without stopping the batch.
-- **Clipboard default / fallback folder**: initially `assets/clipboard`. Clipboard rules with a blank path inherit this folder. Unmatched clipboard imports also use this folder, independently of the ordinary module/group fallback.
-- **Prefer clipboard defaults over ordinary file rules**: when checked, clipboard imports skip ordinary file rules. Explicit clipboard rules always retain priority. Initially unchecked to allow existing file rules to continue matching.
-- **Clipboard filename builder**: configure the base name, available token definitions and ordered filename extensions in a modal editor. Apply changes only the parent settings draft; save that menu to persist them. Cancel does not change saved settings.
+Click the pad text and press **Ctrl+V**, or use **Clipboard import**. The button reads the browser clipboard and may ask for permission. If it fails, the module focuses the pad and suggests Ctrl+V.
 
-Use **Ctrl+V** on the focused pad or its clipboard button to import. Local drag and drop and the cloud file chooser remain ordinary uploads unless their matching rule uses the **Clipboard Import** action.
+Under **Upload actions and clipboard defaults**, **Allow Ctrl+V anywhere in the active upload application** extends paste handling beyond the pad. Paste in editable controls still edits those controls.
 
-## Rules and priority
-
-Rules have **Only match clipboard imports** and a clipboard image-format choice: **Use clipboard default**, PNG, WebP or JPG. A blank regex in a clipboard-only rule matches any clipboard filename; a nonblank regex and the size limit still apply. A blank path inherits the clipboard folder. Image-format overrides apply to clipboard-only rules.
-
-Routing uses the source filename and size before conversion or renaming. First, included clipboard-only rules are checked in group/rule order. If none matches and clipboard defaults are not preferred, ordinary matching rules are checked. Finally, clipboard defaults provide the fallback. All-groups exclusions and selected-group filtering apply throughout. A clipboard-only rule is never an ordinary file's group fallback, even if marked as the group default.
-
-The predefined rule action **Clipboard Import** treats a matching local file as a clipboard import before upload. It reroutes through explicit clipboard rules, otherwise uses the clipboard folder, default image format and name settings. It uploads once. A matching explicit clipboard rule may override the image format, destination and actions. Macros run after the server confirms the upload, as with other actions. This preprocessing action is configured on a rule; the chooser for post-upload actions continues to offer sharing and journal operations.
-
-## Filename editor
-
-Drag a token from **Available extensions** into **Filename extensions in order**. Drag the selected tokens to reorder them, or use their arrow buttons. The add button copies a preset into the name. The trash button removes a preset or selected token independently. Plus adds a custom definition to either list. Double-click a token, or use its edit button, to change its definition.
-
-| Token | Definition |
+| Content | Stored form |
 | --- | --- |
-| Date / time | `YYYY`, `YY`, `MM`, `MMM`, `DD`, `HH`, `mm`, `ss`, or a combined pattern such as `YYYY-MM-DD_HH-mm-ss` |
-| Separator | Custom filename-safe text, including `_`, `-`, `.`, or a space |
-| Seconds since 1970 | Integer Unix timestamp in seconds |
-| Random decimal digits | 1–32 digits, preserving leading zeros |
-| SHA-256 | Hash of the final file content after image conversion |
-| Active group name | Matching routing group, or the selected group when defaults apply |
+| Image | Image in the configured PNG, WebP, or JPG format |
+| HTML | An `.html` file preserving the supplied HTML |
+| Plain text, including Markdown | A `.txt` file preserving literal text |
 
-Dates use the importing browser's local time. `MMM` uses the active language. The preview uses sample content for its hash. The file extension is added from the actual image format or the original non-image file. HTML and plain text retain their contents.
+The button takes one preferred representation per clipboard item: image first, then HTML, then plain text. Native paste uses available files first, otherwise HTML before plain text. Copying from a web page may therefore import HTML instead of plain text.
 
-For example, base `clipboard-image`, then `_`, `YYYY`, `_`, `MM`, `_`, and a four-digit random token produces `clipboard-image_2024_10_1234.png`. An empty resulting name becomes `clipboard_<seconds since 1970>`. Invalid filename/path characters are removed. The default naming pattern uses `clipboard-image_<timestamp>_<4 random digits>`.
+Local drops and the cloud chooser remain ordinary imports unless their matching rule uses the **Clipboard Import** action.
 
-All clipboard defaults, token definitions and per-rule options participate in JSON export/import. Older configurations receive the new defaults automatically. Import and save the Clipboard Import menu to apply its fields; the groups menu saves rule options separately.
+## Configure defaults
+
+Open **Configure Settings > Quick File Upload > Clipboard Import**.
+
+| Setting | Default | Behavior |
+| --- | --- | --- |
+| Clipboard image format | PNG | Convert images to PNG, WebP, or JPG |
+| Clipboard default / fallback folder | `assets/clipboard` | Destination for unmatched clipboard files and blank clipboard-rule paths |
+| Prefer clipboard defaults over ordinary file rules | Off | Skip ordinary rules after checking explicit clipboard rules |
+| Clipboard filename builder | Base plus timestamp/random tokens | Generate names; see [[filename-builder]] |
+
+Conversion changes actual bytes, not just suffixes. JPG composites transparency onto white. Unsupported or corrupt images fail individually; other batch files continue. Non-image contents are retained and receive generated names.
+
+## Clipboard-only rules
+
+In **Regex groups and rules**, enable **Only match clipboard imports** on a rule. Override its image format or inherit the clipboard default.
+
+A blank regex matches every clipboard filename, subject to size. A blank destination inherits the clipboard folder. Ordinary local imports never match these rules.
+
+Routing tests original filenames and sizes before conversion or naming:
+
+1. Select active groups using All groups and the group selection.
+2. Check clipboard-only rules in group/rule order.
+3. If none matches, check ordinary rules unless **Prefer clipboard defaults** is enabled.
+4. If still unmatched, use the clipboard fallback, independently of ordinary module/group defaults.
+
+Clipboard-only rules take priority even when an ordinary rule appears earlier. Group exclusions still apply. A clipboard-only default never becomes an ordinary file's fallback.
+
+## Process a local file with clipboard settings
+
+Set an ordinary rule's built-in action to **Clipboard Import**. A matching local file is rerouted through explicit clipboard-only rules, or otherwise uses clipboard defaults. It is converted/named before being uploaded once.
+
+A matching clipboard-only rule may supply its destination, format, and action configuration. Optional macros run after confirmed storage. This preprocessing action is configured on a rule, not offered in the post-upload action chooser.
+
+## Example: paste image handouts as WebP
+
+1. Set the default image format to WebP and clipboard fallback to `uploads/clipboard`.
+2. Add a clipboard-only rule in a `Handouts` group, with regex `/\.(png|jpe?g|webp)$/i` and size `0`.
+3. Set the destination to `uploads/handouts` and action to **Show image to players**.
+4. Include Handouts in All groups mode, or select it alone.
+5. Paste an image and inspect its path and display.
+
+The regex tests the source suffix, not the final `.webp` name. Other clipboard formats need an appropriate pattern or separate rule. Avoid a blank sharing-rule regex when also pasting text, because image sharing requires an image.
+
+All clipboard settings participate in [[settings-transfer|JSON transfer]]. For the filename editor and reusable naming library, see [[filename-builder]] and [[automation]].
+
+Previous: [[regex-examples]] · Next: [[filename-builder]] · [[index|All chapters]]
