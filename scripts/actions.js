@@ -171,7 +171,10 @@ export async function ExecuteBuiltin(uploadFile, savedPath, functionName, module
   }
   // Clipboard processing and manual naming happen before the confirmed upload.
   if (functionName === "none" || functionName === "clipboard" || functionName === "manual") return;
-  let imageFlag = uploadFile.type?.startsWith("image/") === true || /\.(png|jpe?g|webp|gif|svg|avif|bmp)$/i.test(uploadFile.name);
+  let imageExtension = uploadFile.name.split(".").at(-1).toLowerCase();
+  let imageFlag = uploadFile.type?.startsWith("image/") === true
+    || Object.hasOwn(globalThis.CONST?.IMAGE_FILE_EXTENSIONS ?? {}, imageExtension)
+    || /\.(png|jpe?g|webp|gif|svg|avif|bmp)$/i.test(uploadFile.name);
   if (functionName !== "journaltext" && imageFlag === false) throw new Error(game.i18n.localize("QFU.ImageRequired"));
   // if (functionName !== "journaltext" && imageFlag === false) throw new Error(game.i18n.localize("This action requires an image file."));
   let imageMarkup = `<img src="${EscapeMarkup(savedPath)}" alt="${EscapeMarkup(uploadFile.name)}">`;

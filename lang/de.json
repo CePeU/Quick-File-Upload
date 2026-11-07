@@ -180,6 +180,11 @@
     "ManualBatchHint": "Der gemeinsame Basisname erhält für jede Datei die Namenserweiterungen des Clipboard-Imports. Bei Einzelbenennung diesen Dialog bestätigen, um die Namen jeder Datei einzugeben.",
     "ManualInvalid": "Bitte einen gültigen Dateinamen eingeben.",
     "ManualOk": "OK – Import starten",
-    "Cancel": "Abbrechen"
+    "Cancel": "Abbrechen",
+    "BrowserPlayers": "Spielern zeigen",
+    "BrowserChat": "Im Chat posten",
+    "BrowserDrop": "Drop-Aktion",
+    "BrowserGroup": "Gruppenaktion",
+    "BrowserReadFailed": "Die ausgewählte Datei konnte nicht gelesen werden."
   }
 }

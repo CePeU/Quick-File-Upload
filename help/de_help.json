@@ -1,5 +1,5 @@
 {
-  "Intro": "Quick File Upload 1.13.0: Lokale Dateien ablegen, über die Wolke auswählen oder Bilder und Text aus der Zwischenablage importieren. Klappe ein Thema für Einstellungen und Beispiele auf.",
+  "Intro": "Quick File Upload 1.14.0: Lokale Dateien ablegen, über die Wolke auswählen oder Bilder und Text aus der Zwischenablage importieren. Klappe ein Thema für Einstellungen und Beispiele auf.",
   "Topics": [
     {
       "Title": "Gruppen und Regeln",
@@ -75,6 +75,13 @@
       "Paragraphs": [
         "Export lädt den vollständigen gültigen Einstellungsentwurf herunter, einschließlich ungespeicherter Änderungen des geöffneten Menüs. Import prüft JSON und lädt es in den Entwurf. Speichern übernimmt nur Felder des geöffneten Menüs; importiere für andere Bereiche in deren Menüs. Abbrechen verwirft Entwurfsänderungen. Ungültige Importe lassen den Entwurf unverändert; Serverdateien werden nicht exportiert.",
         "Die Hilfe liegt separat in help/en_help.json und help/de_help.json. Jede Datei enthält Intro und Topics, mit Title und Paragraphs pro Thema. Texte werden wörtlich angezeigt, ohne HTML oder Übersetzungsschlüssel. Bearbeite das JSON zum Aktualisieren; erneutes Öffnen lädt die Datei neu. Die aktive Sprache wählt die Datei. Fehlt sie beim Start oder ist sie ungültig, entfällt der Hilfemenüpunkt."
+      ]
+    },
+    {
+      "Title": "Vorhandene Dateien im Foundry-Dateibrowser",
+      "Paragraphs": [
+        "Unter Datei auswählen stehen vier Buttons. Spielern zeigen zeigt das ausgewählte Bild allen Spielern; Im Chat posten veröffentlicht es im Chat. Diese beiden Buttons benötigen ein von Foundry unterstütztes Bildformat. Drop-Aktion öffnet die vorhandene Aktionsauswahl einschließlich Journalbild und Journaltext. Abbrechen lässt die Datei unverändert.",
+        "Gruppenaktion verwendet den aktuellen Alle-Gruppen-Schalter und die ausgewählte Gruppe des Uploadfensters. Vor dessen erstem Öffnen gelten die konfigurierte Startauswahl und die erste Gruppe. Dateiname und tatsächliche Dateigröße bestimmen die passende Regel oder den Gruppenstandard. Deren Aktion und Makro laufen mit dem bestehenden Pfad; die Datei wird weder hochgeladen noch kopiert, umbenannt oder konvertiert. Clipboard Import und Manuelle Benennung haben hier keine dateiverarbeitende Wirkung. Ohne passende Regelaktion geschieht nichts. Für Text- und Größenaktionen muss der Browser die vorhandene Datei lesen können."
       ]
     }
   ]

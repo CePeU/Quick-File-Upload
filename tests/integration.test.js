@@ -500,7 +500,7 @@ test("user-controlled names are rendered as text rather than HTML", async () => 
 
 test("help renders structured expandable topics and the agreed fallback behavior", async () => {
   let helpWindow = await new HelpApplication().render();
-  assert.equal(helpWindow.element.querySelectorAll("details").length, 10);
+  assert.equal(helpWindow.element.querySelectorAll("details").length, 11);
   assert.equal(helpWindow.element.querySelector("details").open, true);
   assert.match(helpWindow.element.textContent, /group defaults are ignored/);
   assert.match(helpWindow.element.textContent, /1,024 bytes/);
@@ -512,7 +512,7 @@ test("language JSON determines help contents, including fresh changes and workin
   assert.match(helpWindow.element.textContent, /Manuell benamen/);
   assert.match(helpWindow.element.textContent, /Alle Dateinamen: \.\*/);
   assert.match(helpWindow.element.textContent, /png\|webp/);
-  assert.equal(helpWindow.element.querySelectorAll("details").length, 10);
+  assert.equal(helpWindow.element.querySelectorAll("details").length, 11);
   globalThis.fetch = async () => ({ ok: true, json: async () => ({ Intro: "Updated <script>text</script>", Topics: [
     { Title: "New topic", Paragraphs: ["New help without changing JavaScript"] }
   ] }) });
@@ -785,4 +785,29 @@ test("paste and clipboard button mark imports while drag and local selection rem
   Object.defineProperty(fileInput, "files", { value: [new File(["Hello"], "local.txt")] });
   fileInput.dispatchEvent(new Event("change"));
   assert.equal(imports[3].context, undefined);
+});
+
+
+test("registered file browser hook reads the uploader's current selection at each click", async () => {
+  let uploadApp = await OpenUpload();
+  let root = document.createElement("form");
+  root.innerHTML = '<input name="file" value="existing/map.png"><footer class="form-footer"><button type="submit">Select File</button></footer>';
+  document.body.append(root);
+  let posted = [];
+  globalThis.CONST = { IMAGE_FILE_EXTENSIONS: { png: "image/png" } };
+  globalThis.ChatMessage = { create: async data => posted.push(data) };
+  globalThis.fetch = async () => ({ ok: true, blob: async () => new Blob(["map"]) });
+  currentSettings.Groups[0].Rules[0].Action = { Function: "chat", Macro: "", Before: false };
+  hookHandlers.get("renderFilePicker")({ element: root, type: "any" });
+  uploadApp.All = false;
+  uploadApp.Selected = "Sounds";
+  root.querySelector('[data-qu-action="group"]').click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(posted.length, 0);
+  uploadApp.Selected = "Images";
+  root.querySelector('[data-qu-action="group"]').click();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(posted.length, 1);
+  assert.match(posted[0].content, /existing\/map.png/);
+  await uploadApp.close();
 });

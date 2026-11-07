@@ -1,3 +1,10 @@
+## [1.14.0] / 2026-11-07
+### Added
+- Four buttons below Select File in Foundry's file browser: Show to players, Post to chat, Drop action, and Group Action.
+- Existing-file actions reuse the selected URL, action chooser, journal workflow and rule macros without uploading or copying files. Direct image sharing targets all players.
+- Group actions follow the upload window's current group selection and ordered filename/byte-size rules, including selected-group defaults. Before opening the uploader, its configured initial selection applies. Upload-time naming and conversion are skipped.
+- English/German labels and help, Foundry image-extension support, and regression coverage.
+
 ## [1.13.0] / 2026-11-01
 ### Changed
 - Help topics now load from language-specific `help/en_help.json` and `help/de_help.json`, selected after client localization initializes. Missing or invalid help omits the help menu and editor button.

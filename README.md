@@ -26,3 +26,5 @@ Optional actions can post an image to chat, show it to selected players, create 
 Uploading requires Foundry's file-upload permission. Only GMs can save module settings.
 
 Clipboard-only routing, real PNG/WebP/JPG conversion, default folders and a drag-and-drop filename builder are available in **Configure Settings > Quick File Upload > Clipboard Import**. See [Clipboard Import](docs/clipboard-import.md) for settings, rule priority and the reusable naming library.
+
+The Foundry file browser also offers **Show to players**, **Post to chat**, **Drop action** and **Group Action** below Select File. Group Action uses the upload window's current group selection and the matching rule action on the existing file path, without uploading or copying. Before opening the upload window it uses the configured initial selection. Upload-time naming and conversion are skipped.

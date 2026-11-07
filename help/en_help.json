@@ -1,5 +1,5 @@
 {
-  "Intro": "Quick File Upload 1.13.0: drop local files, click the cloud to browse, or import images and text from the clipboard. Expand a topic for settings and examples.",
+  "Intro": "Quick File Upload 1.14.0: drop local files, click the cloud to browse, or import images and text from the clipboard. Expand a topic for settings and examples.",
   "Topics": [
     {
       "Title": "Groups and rules",
@@ -75,6 +75,13 @@
       "Paragraphs": [
         "Export downloads the full valid settings draft, including unsaved edits from the open menu. Import validates and stages JSON. Saving applies only fields belonging to the open menu; import in other menus to apply their settings. Cancel discards draft changes. Invalid imports leave the draft unchanged; server files are not exported.",
         "Help is stored separately in help/en_help.json and help/de_help.json. Each file contains Intro and Topics, with Title and Paragraphs for each topic. Text is displayed literally, without HTML or translation keys. Edit the JSON to update this help; reopening reloads the file. The active language chooses the file. If it is absent or invalid at startup, the help menu is omitted."
+      ]
+    },
+    {
+      "Title": "Existing files in the Foundry file browser",
+      "Paragraphs": [
+        "Four buttons appear below Select File. Show to players shares the selected image with every player; Post to chat posts it publicly. These two buttons require an image format supported by Foundry. Drop action opens the existing action chooser, including journal image and text actions. Cancel leaves the file untouched.",
+        "Group Action uses the upload window's current All groups toggle and selected group. Before the upload window is opened, the configured initial toggle and first group apply. Filename and actual byte size select the matching rule or selected group default. The rule's action and macro run with the existing path; no file is uploaded, copied, renamed or converted. Clipboard Import and Manual naming have no file-processing effect here. With no matching rule action, nothing runs. Text and size-based actions read the existing file and require browser access to it."
       ]
     }
   ]

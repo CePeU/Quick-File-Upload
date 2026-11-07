@@ -5,6 +5,7 @@ import { ResolveDimension } from "./core.js";
 import { ReadSettings } from "./storage.js";
 import { ApplyRuleColors } from "./ui.js";
 import { UploadApplication, CanUpload } from "./upload.js";
+import { DecorateFileBrowser } from "./file-browser.js";
 import { ConfigurationApplication, HelpApplication, ControlsApplication, LayoutApplication, ActionsApplication, ClipboardApplication } from "./configuration.js";
 
 let uploadWindow = null;
@@ -97,3 +98,9 @@ Hooks.on("renderSceneControls", controlApplication => {
 });
 
 Hooks.on("renderSettingsConfig", settingsApplication => DecorateHelpMenu(settingsApplication.element));
+
+Hooks.on("renderFilePicker", filePicker => DecorateFileBrowser(filePicker, () => {
+  if (uploadWindow !== null) return { All: uploadWindow.All, Selected: uploadWindow.Selected };
+  let moduleSettings = ReadSettings();
+  return { All: moduleSettings.Allgroups, Selected: moduleSettings.Groups[0]?.Identifier ?? null };
+}));

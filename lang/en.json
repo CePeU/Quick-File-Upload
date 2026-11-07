@@ -180,6 +180,11 @@
     "ManualBatchHint": "The shared base receives the clipboard naming extensions for each file. With separate naming, confirm this base to continue to each file.",
     "ManualInvalid": "Enter a valid filename.",
     "ManualOk": "OK – start import",
-    "Cancel": "Cancel"
+    "Cancel": "Cancel",
+    "BrowserPlayers": "Show to players",
+    "BrowserChat": "Post to chat",
+    "BrowserDrop": "Drop action",
+    "BrowserGroup": "Group Action",
+    "BrowserReadFailed": "The selected file could not be read."
   }
 }
