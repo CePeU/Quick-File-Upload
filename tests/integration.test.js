@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { QFU_MODULE_ID, QFU_SETTINGS_KEY, QFU_SETTINGS } from "../scripts/settings.js";
 import { CreateSettings, LocalizeText, QFU_ENGLISH } from "../testing/fixtures.js";
-import { SerializeSettings } from "../scripts/core.js";
+import { SerializeSettings, ParseSettings } from "../scripts/core.js";
 
 let browserWindow = new JSDOM("<!doctype html><body></body>").window;
 globalThis.window = browserWindow;
@@ -399,18 +399,37 @@ test("import stages settings and saves only the current menu; invalid import lea
   assert.equal(writtenSettings[0].Color, QFU_SETTINGS.Color);
 });
 
-test("export downloads the current validated draft and creates no settings writes", async () => {
+test("export delegates the portable unsaved draft to Foundry without document link clicks", async () => {
   let settingsWindow = await new LayoutApplication().render();
   settingsWindow.Form.elements.namedItem("Label").value = "Export this draft";
-  let exportBlob, downloadName;
-  let originalCreate = URL.createObjectURL;
-  let originalClick = browserWindow.HTMLAnchorElement.prototype.click;
-  URL.createObjectURL = blobValue => { exportBlob = blobValue; return "blob:test"; };
-  browserWindow.HTMLAnchorElement.prototype.click = function () { downloadName = this.download; };
-  try { settingsWindow.ExportSettings(); }
-  finally { URL.createObjectURL = originalCreate; browserWindow.HTMLAnchorElement.prototype.click = originalClick; }
-  assert.equal(downloadName, "quick-file-upload-settings.json");
-  assert.equal(JSON.parse(await exportBlob.text()).Settings.Label, "Export this draft");
+  let exportCalls = [], externalLinks = [];
+  let originalUtils = foundry.utils;
+  // Foundry intercepts document hyperlinks without exempting download links.
+  function InterceptLink(event) {
+    let anchor = event.target.closest("a[href]");
+    if (anchor === null) return;
+    event.preventDefault();
+    externalLinks.push(anchor.href);
+  }
+  document.addEventListener("click", InterceptLink);
+  foundry.utils = { ...originalUtils, saveDataToFile: (...args) => exportCalls.push(args) };
+  try {
+    settingsWindow.ExportSettings();
+    assert.equal(exportCalls.length, 1);
+    assert.equal(exportCalls[0][1], "application/json");
+    assert.equal(exportCalls[0][2], "quick-file-upload-settings.json");
+    let importedSettings = ParseSettings(exportCalls[0][0]);
+    assert.deepEqual(importedSettings, settingsWindow.ReadDraft());
+    assert.equal(importedSettings.Label, "Export this draft");
+    // Invalid drafts must fail before any download is requested.
+    settingsWindow.Form.elements.namedItem("Width").value = "invalid";
+    assert.throws(() => settingsWindow.ExportSettings());
+    assert.equal(exportCalls.length, 1);
+  } finally {
+    foundry.utils = originalUtils;
+    document.removeEventListener("click", InterceptLink);
+  }
+  assert.deepEqual(externalLinks, []);
   assert.equal(writtenSettings.length, 0);
 });
 

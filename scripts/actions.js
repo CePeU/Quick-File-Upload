@@ -198,7 +198,12 @@ export async function ExecuteBuiltin(uploadFile, savedPath, functionName, module
     if (recipientUsers === null) return;
   }
   if (functionName === "image") {
-    if (recipientUsers.length > 0) new foundry.applications.apps.ImagePopout({ src: savedPath, window: { title: uploadFile.name } }).shareImage({ users: recipientUsers });
+    let imagePopout = new foundry.applications.apps.ImagePopout({ src: savedPath, window: { title: uploadFile.name } });
+    // A sender outside the audience receives no socket event. Show the image
+    // locally in that case; otherwise the socket opens it once for the sender.
+    if (recipientUsers.includes(game.user?.id) === false) await imagePopout.render({ force: true });
+    // Foundry broadcasts an empty recipient list, so never share that list.
+    if (recipientUsers.length > 0) imagePopout.shareImage({ users: recipientUsers });
     return;
   }
   if (journalEntry === null || journalEntry.isOwner !== true) throw new Error(game.i18n.localize("QFU.InvalidJournal"));

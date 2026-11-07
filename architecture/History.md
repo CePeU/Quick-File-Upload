@@ -1,3 +1,24 @@
+# Bug fixes 1.14.1 - 2026-11-07
+
+## Original requirements from ToDO.md
+
+# BUG
+
+1. Der Button Show to players funktioniert nicht. Drop to action erlaubt die auswahl von "Show image to players". Genau das sollte der button "Show to players" erlauben. (Vielleicht war die spezifikation nicht korrekt - es soll die ausgewählte Bilddatei den Spielern gezeigt werden und nicht im chat - bei diesem button)
+
+2. Der JSON export funktioniert nicht. Ich erhalte die Fehlermeldung "Holen Sie sich eine App, um diesen "blob" - Link zu öffnen". Ziel dieser funktion ist ein JSON zu schreiben das die Setting informationen für dieses Modul hält damit man diese importieren kann auf einer anderen Foundry instanz.
+   ![alt text](image.png)
+
+# Change
+
+## Implementation
+
+- Image actions open a local ImagePopout for the sender when the sender is outside the recipient list, and share the selected server path with the configured players. Show to players never creates a chat message. Empty audiences do not broadcast; senders included in the audience receive one window through the socket.
+- JSON export uses Foundry v14's native foundry.utils.saveDataToFile helper. Its detached download link avoids Foundry's document-level hyperlink handler, which otherwise opens the blob URL externally in the desktop client.
+- Exports retain the versioned module envelope and all validated unsaved settings for import on another instance. Invalid drafts do not start a download.
+- Added regression coverage for direct button clicks, local display without players, recipient handling, export delegation and JSON round trips. Updated the release manifest to 1.14.1.
+- Validation: all 92 tests, syntax/naming checks and git diff whitespace checks pass. APIs were checked against the locally installed Foundry v14.370 source. Live desktop download and a second connected player client remain manual verification steps.
+
 # Change 1.14.0 - 2026-11-07
 
 ## Original requirements from ToDO.md

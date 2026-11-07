@@ -343,18 +343,12 @@ export class ConfigurationApplication extends ContentApplication {
     // this.Form.querySelector(".qu-validation").textContent = game.i18n.localize("Import loaded into the editor. Review and Save to apply, or Cancel to discard.");
   }
 
-  /* Download current validated editor contents as JSON using browser APIs. */
+  /* Download the validated draft through Foundry's detached-link helper so its
+   * document hyperlink handler cannot open the blob URL in an external app.
+   */
   ExportSettings() {
     let exportText = SerializeSettings(this.ReadDraft());
-    let downloadUrl = URL.createObjectURL(new Blob([exportText], { type: "application/json" }));
-    let downloadLink = document.createElement("a");
-    downloadLink.href = downloadUrl;
-    downloadLink.download = "quick-file-upload-settings.json";
-    document.body.append(downloadLink);
-    downloadLink.click();
-    downloadLink.remove();
-    // Keep the object URL alive until the browser has started the download.
-    setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    foundry.utils.saveDataToFile(exportText, "application/json", "quick-file-upload-settings.json");
   }
 
   /* Persist a validated editor draft. Returns Promise<void>; failures are

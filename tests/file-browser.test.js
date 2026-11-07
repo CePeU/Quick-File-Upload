@@ -5,13 +5,13 @@ import { DecorateFileBrowser, ExecuteBrowserAction } from "../scripts/file-brows
 import { QFU_SETTINGS, QFU_ACTION_SETTINGS } from "../scripts/settings.js";
 import { LocalizeText } from "../testing/fixtures.js";
 
-let currentSettings, postedMessages, sharedImages, macroCalls, readPaths, errorMessages;
+let currentSettings, postedMessages, sharedImages, renderedImages, macroCalls, readPaths, errorMessages;
 beforeEach(() => {
   globalThis.document = new JSDOM("<!doctype html><body></body>").window.document;
   currentSettings = structuredClone(QFU_SETTINGS);
-  postedMessages = []; sharedImages = []; macroCalls = []; readPaths = []; errorMessages = [];
+  postedMessages = []; sharedImages = []; renderedImages = []; macroCalls = []; readPaths = []; errorMessages = [];
   globalThis.game = {
-    i18n: { localize: LocalizeText }, settings: { get: () => currentSettings },
+    i18n: { localize: LocalizeText }, settings: { get: () => currentSettings }, user: { id: "gm", isGM: true },
     users: [{ id: "one", isGM: false }, { id: "two", isGM: false }, { id: "gm", isGM: true }]
   };
   globalThis.CONST = { IMAGE_FILE_EXTENSIONS: { png: "image/png", tiff: "image/tiff", apng: "image/apng", webp: "image/webp" }, JOURNAL_ENTRY_PAGE_FORMATS: { HTML: 1 } };
@@ -19,6 +19,7 @@ beforeEach(() => {
     api: { DialogV2: { prompt: async () => null } },
     apps: { ImagePopout: class {
       constructor(options) { this.options = options; }
+      async render(options) { renderedImages.push({ ...options, src: this.options.src }); return this; }
       shareImage(options) { sharedImages.push({ ...options, src: this.options.src }); }
     }, FilePicker: { upload: () => assert.fail("No upload allowed"), createDirectory: () => assert.fail("No directory writes allowed") } }
   } };
@@ -50,11 +51,33 @@ test("direct sharing targets every player despite audience defaults and preserve
   currentSettings.Journal = "invalid";
   await ExecuteBrowserAction("assets/A%20map.TIFF?version=1", "players");
   assert.deepEqual(sharedImages, [{ users: ["one", "two"], src: "assets/A%20map.TIFF?version=1" }]);
+  assert.deepEqual(renderedImages, [{ force: true, src: "assets/A%20map.TIFF?version=1" }]);
+  assert.equal(postedMessages.length, 0);
   await ExecuteBrowserAction('https://cdn.example/map%20one.apng', "chat");
   assert.match(postedMessages[0].content, /src="https:\/\/cdn.example\/map%20one.apng"/);
   assert.match(postedMessages[0].content, /alt="map one.apng"/);
   assert.deepEqual(readPaths, []);
   await assert.rejects(() => ExecuteBrowserAction("assets/file.pdf", "chat"), /requires an image/);
+});
+
+test("Show to players button opens the selected image and never posts to chat", async () => {
+  let picker = CreatePicker("assets/map.png");
+  DecorateFileBrowser(picker, () => ({ All: true, Selected: null }));
+  picker.element.querySelector('[data-qu-action="players"]').click();
+  await FlushActions();
+  assert.deepEqual(renderedImages, [{ force: true, src: "assets/map.png" }]);
+  assert.deepEqual(sharedImages, [{ users: ["one", "two"], src: "assets/map.png" }]);
+  assert.deepEqual(postedMessages, []);
+  assert.deepEqual(errorMessages, []);
+  assert.deepEqual(readPaths, []);
+});
+
+test("direct image display works locally without players and avoids an empty broadcast", async () => {
+  game.users = [{ id: "gm", isGM: true }];
+  await ExecuteBrowserAction("assets/map.png", "players");
+  assert.equal(renderedImages.length, 1);
+  assert.deepEqual(sharedImages, []);
+  assert.deepEqual(postedMessages, []);
 });
 
 test("group actions use real size, ordered rules and existing path in macro scope", async () => {
