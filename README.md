@@ -1,6 +1,7 @@
 ![Total Module Downloads (All Versions)](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/quick-file-uploads.zip?label=Total%20Module%20Downloads&color=blue&displayAssetName=false)
 
-![GitHub Downloads (latest release)](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/latest/quick-file-uploads.zip)
+![Latest Module Downloads](https://img.shields.io/github/downloads/CePeU/Quick-File-Upload/latest/quick-file-uploads.zip?displayAssetName=false&label=Latest%20Module%20Downloads&color=blue)
+
 
 # Quick File Upload
 
